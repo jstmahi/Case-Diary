@@ -4,778 +4,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Case Diary Generator (v9.0 PRO MAX)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        :root {
-            --primary: #007AFF;
-            /* Apple Blue */
-            --primary-hover: #0056b3;
-            --secondary: #5E5CE6;
-            --bg: #F5F5F7;
-            /* Soft Apple light gray */
-            --surface: #FFFFFF;
-            --border: #E5E5EA;
-            --text-main: #1D1D1F;
-            --text-muted: #86868B;
-            --radius-lg: 16px;
-            --radius-md: 10px;
-            --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.05);
-            --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Base Styles & Typography */
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 40px 20px;
-            line-height: 1.5;
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            background: var(--surface);
-            padding: 40px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        h2 {
-            color: var(--text-main);
-            text-align: center;
-            font-weight: 700;
-            font-size: 28px;
-            margin-top: 0;
-            margin-bottom: 30px;
-            letter-spacing: -0.5px;
-        }
-
-        /* Layout Sections */
-        .section {
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 25px;
-            margin-bottom: 25px;
-            background: var(--surface);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .section:hover {
-            box-shadow: var(--shadow-hover);
-        }
-
-        .sec-title {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--primary);
-            font-weight: 700;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 10px;
-        }
-
-        .row {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
-
-        .col {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
-        }
-
-        .col-full {
-            width: 100%;
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        /* Inputs & Labels */
-        label {
-            display: block;
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        input,
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            box-sizing: border-box;
-            font-family: inherit;
-            background-color: #FAFAFA;
-            transition: all 0.2s ease;
-        }
-
-        input:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: #FFF;
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        /* Upload Zones (Stripe Style) */
-        .upload-zone {
-            border: 2px dashed #D1D1D6;
-            padding: 25px 15px;
-            text-align: center;
-            background: #FAFAFC;
-            border-radius: var(--radius-md);
-            transition: all 0.2s ease;
-        }
-
-        .upload-zone:hover {
-            border-color: var(--primary);
-            background: #F0F7FF;
-        }
-
-        .upload-zone input {
-            display: none;
-        }
-
-        .upload-zone label.upload-btn {
-            display: inline-block;
-            background: var(--surface);
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            margin-top: 10px;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-
-        .upload-zone label.upload-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
-        }
-
-        /* Cards */
-        .cd-card,
-        .witness-card {
-            background: var(--surface);
-            border-left: 4px solid var(--primary);
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            position: relative;
-            box-shadow: var(--shadow-sm);
-        }
-
-        h4 {
-            margin-top: 0;
-            color: var(--text-main);
-            font-weight: 600;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            display: inline-block;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        .btn-green {
-            background: #34C759;
-            color: white;
-            margin-top: 5px;
-        }
-
-        .btn-green:hover {
-            background: #2EAF4E;
-            box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
-        }
-
-        .btn-blue {
-            background: var(--secondary);
-            color: white;
-            width: 100%;
-            font-size: 15px;
-            margin-bottom: 15px;
-        }
-
-        .btn-blue:hover {
-            background: #4B49C6;
-            box-shadow: 0 4px 12px rgba(94, 92, 230, 0.3);
-        }
-
-        .btn-main {
-            background: var(--primary);
-            color: white;
-            width: 100%;
-            font-size: 16px;
-            margin-top: 20px;
-            padding: 18px;
-            border-radius: var(--radius-lg);
-        }
-
-        .btn-main:hover {
-            background: var(--primary-hover);
-            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            margin-top: 5px;
-        }
-
-        .btn-outline:hover {
-            background: var(--bg);
-            border-color: #C7C7CC;
-        }
-
-        .remove-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #FFE5E5;
-            color: #d32f2f;
-            border: none;
-            padding: 6px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .remove-btn:hover {
-            background: #d32f2f;
-            color: white;
-        }
-
-        #loader {
-            display: none;
-            color: var(--secondary);
-            font-weight: 600;
-            text-align: center;
-            padding: 15px;
-        }
-
-        .helper-text {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        /* Entrance Animations */
-        @keyframes slideUpFade {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    <title>Police Force Management & Drafting</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Case File Drafter</h1>
+            <p class="subtitle">Select a section to begin drafting</p>
+        </header>
 
-    <div class="container">
-        <h2>Case Diary & Remand Report Generator</h2>
+        <nav class="ios-tabs" aria-label="Tabs">
+            <button class="tab-btn active" data-tab="basic-info">Basic Info</button>
+            <button class="tab-btn" data-tab="part1-cd">Part-I CD</button>
+            <button class="tab-btn" data-tab="witnesses-part2">Witnesses & Part-II</button>
+            <button class="tab-btn" data-tab="mahazzars">Mahazzars & Seizures</button>
+            <button class="tab-btn" data-tab="arrest-remand">Arrest/Remand</button>
+        </nav>
 
-        <div class="section">
-            <div class="sec-title">1. Document Uploads</div>
-            <div class="row">
-                <div class="col upload-zone">
-                    <strong>📄 Upload FIR</strong><br>
-                    <label class="upload-btn" for="fileFIR">Choose .docx/.txt</label>
-                    <input type="file" id="fileFIR" accept=".docx,.txt" onchange="handleFileUpload(event, 'firRaw')">
-                    <span class="helper-text" id="firStatus"><br>No file</span>
-                </div>
-                <div class="col upload-zone">
-                    <strong>📄 Upload Complaint</strong><br>
-                    <label class="upload-btn" for="fileComplaint">Choose .docx/.txt</label>
-                    <input type="file" id="fileComplaint" accept=".docx,.txt"
-                        onchange="handleFileUpload(event, 'complaintRaw')">
-                    <span class="helper-text" id="compStatus"><br>No file</span>
-                </div>
-                <div class="col upload-zone">
-                    <strong>📄 Upload Statements</strong><br>
-                    <label class="upload-btn" for="fileStatements">Choose .docx/.txt</label>
-                    <input type="file" id="fileStatements" accept=".docx,.txt"
-                        onchange="handleFileUpload(event, 'statementsRaw')">
-                    <span class="helper-text" id="stmtStatus"><br>No file</span>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col upload-zone">
-                    <strong>📍 Scene Observation</strong><br>
-                    <label class="upload-btn" for="fileScene">Choose .docx/.txt</label>
-                    <input type="file" id="fileScene" accept=".docx,.txt"
-                        onchange="handleFileUpload(event, 'sceneRaw')">
-                </div>
-                <div class="col upload-zone">
-                    <strong>📦 Seizure Panchanama</strong><br>
-                    <label class="upload-btn" for="fileSeizure">Choose .docx/.txt</label>
-                    <input type="file" id="fileSeizure" accept=".docx,.txt"
-                        onchange="handleFileUpload(event, 'seizureRaw')">
-                </div>
-                <div class="col upload-zone">
-                    <strong>🗣️ Confession (Arrest)</strong><br>
-                    <label class="upload-btn" for="fileConfession">Choose .docx/.txt</label>
-                    <input type="file" id="fileConfession" accept=".docx,.txt"
-                        onchange="handleFileUpload(event, 'confessionRaw')">
-                </div>
-            </div>
+        <main class="tab-content-container">
 
-            <div style="display:none;">
-                <textarea id="firRaw"></textarea>
-                <textarea id="complaintRaw"></textarea>
-                <textarea id="statementsRaw"></textarea>
-                <textarea id="sceneRaw"></textarea>
-                <textarea id="seizureRaw"></textarea>
-                <textarea id="confessionRaw"></textarea>
-            </div>
-
-            <button class="btn btn-blue" onclick="translateAndExtract()">🌐 TRANSLATE TO ENGLISH & AUTO-FILL
-                DATA</button>
-            <div id="loader">Translating and Extracting Details... Please wait ⏳</div>
-        </div>
-
-        <div class="section">
-            <div class="sec-title">2. Basic Details & The 8 Columns</div>
-            <div class="row">
-                <div class="col"><label>Police Station</label><input type="text" id="psName" value="BADVEL U/G P.S.">
-                </div>
-                <div class="col"><label>Cr.No / Year</label><input type="text" id="crNo" placeholder="e.g., 52/2024">
-                </div>
-                <div class="col"><label>District</label><input type="text" id="district" value="Y.S.R. Kadapa Dist.">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-full"><label>Date, Time and Place of occurrence</label><input type="text"
-                        id="dateTimePlace"></div>
-                <div class="col-full"><label>Offence U/s</label><input type="text" id="sectionsOfLaw"></div>
-            </div>
-            <hr style="border:0.5px solid var(--border); margin: 25px 0;">
-            <div class="row">
-                <div class="col"><label>1. Date (with hr) of action taken</label><input type="text" id="col1"></div>
-                <div class="col"><label>2. Name of Complainant/Informant</label><input type="text" id="col2"></div>
-            </div>
-            <div class="row">
-                <div class="col-full"><label>3. Names of accused known</label><textarea id="col3"
-                        rows="2">Nil</textarea></div>
-            </div>
-            <div class="row">
-                <div class="col"><label>4. Property lost</label><input type="text" id="col4" value="Nil"></div>
-                <div class="col"><label>5. Property recovered</label><input type="text" id="col5" value="Nil"></div>
-            </div>
-            <div class="row">
-                <div class="col"><label>6. FIR dated</label><input type="text" id="col6"></div>
-                <div class="col"><label>7. Name of deceased</label><input type="text" id="col7" value="Nil"></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="sec-title">3. Preamble & First C.D. Settings</div>
-            <div class="col-full">
-                <label>Auto Preamble (Brief Facts - First CD)</label>
-                <span class="helper-text">As requested, follows: "I submit that this is a case involving..."</span>
-                <textarea id="preambleBox" rows="4"></textarea>
-                <button class="btn btn-outline" onclick="generatePreamble()">🔄 Regenerate Preamble</button>
-            </div>
-            <div class="col-full" style="margin-top:20px;">
-                <label>Complaint Received Line</label>
-                <input type="text" id="complaintIntro"
-                    placeholder="Today i.e., on [Date] at [Time], the complainant [Name] came to PS and presented a written complaint which runs as follows:">
-            </div>
-            <div class="col-full">
-                <label>Translated Complaint Text (Prints as it is)</label>
-                <textarea id="complaintBody" rows="4"></textarea>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="sec-title">4. Witnesses & Gists (Auto-Extract)</div>
-            <button class="btn btn-green" onclick="extractGists()" style="margin-bottom:20px;">📥 Extract Gists from
-                Uploaded Statements</button>
-            <div id="witnessContainer">
-                <div class="witness-card" id="witness-1" data-id="1">
-                    <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
-                    <h4>LW-1 (Complainant)</h4>
-                    <div class="row">
-                        <div class="col-full"><label>Name</label><input type="text" class="lw-name" id="lw1-name"></div>
-                        <div class="col-full"><label>Gist of Statement</label><textarea class="lw-gist" id="lw1-gist"
-                                rows="2"></textarea></div>
+            <section id="basic-info" class="tab-pane active">
+                <h2>FIR & Basic Details</h2>
+                <div class="card-container">
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="crime-no">Crime Number</label>
+                            <input type="text" id="crime-no" placeholder="e.g., 45/2026">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="sections-of-law">Sections of Law</label>
+                            <input type="text" id="sections-of-law" placeholder="e.g., 379 IPC">
+                        </div>
+                    </div>
+                    <div class="form-input-group">
+                        <label for="complainant-name">Complainant Name</label>
+                        <input type="text" id="complainant-name" placeholder="Name of the complainant">
                     </div>
                 </div>
-            </div>
-            <button class="btn btn-outline" onclick="addWitness()">+ Add Witness Box</button>
-        </div>
+            </section>
 
-        <div class="section">
-            <div class="sec-title">5. Investigation Timeline (Part-I CDs)</div>
-            <div id="cdContainer">
-                <div class="cd-card" id="cd-1" data-cd="1">
-                    <h4>Day 1 - C.D.</h4>
-                    <div class="row">
-                        <div class="col"><label>C.D. Date & Time</label><input type="text" class="cd-date"
-                                placeholder="DD.MM.YYYY"></div>
+            <section id="part1-cd" class="tab-pane">
+                <h2>Part-I CD (Investigation Gist)</h2>
+                <div class="card-container">
+                    <div class="form-input-group">
+                        <label for="investigation-gist">Gist of Investigation</label>
+                        <div class="mic-wrapper">
+                            <textarea id="investigation-gist" rows="8"
+                                placeholder="Dictate the gist of the investigation here..."></textarea>
+                            <button class="mic-btn" data-target="investigation-gist"
+                                title="Click to dictate">🎤</button>
+                        </div>
                     </div>
-                    <div class="col-full">
-                        <label>Scene Observation / Seizure Details</label>
-                        <span class="helper-text">If uploaded, translate & paste here.</span>
-                        <textarea class="cd-actions" id="cd1-actions"
-                            rows="4">Then I left the P.S. and proceeded to the scene of offence...</textarea>
+                    <button id="generate-part1" class="primary-btn">Download Part-I CD</button>
+                </div>
+            </section>
+
+            <section id="witnesses-part2" class="tab-pane">
+                <h2>Part-II CD: Witness Statements</h2>
+                <div class="card-container">
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="witness-lw">L.W. Number</label>
+                            <input type="text" id="witness-lw" placeholder="e.g., L.W. 1">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="witness-name">Name & Age</label>
+                            <input type="text" id="witness-name" placeholder="e.g., P. Ravi, 35 yrs">
+                        </div>
                     </div>
-                    <div class="col-full"><label>Witnesses Examined (Enter Numbers, e.g., 1, 2)</label><input
-                            type="text" class="cd-witnesses" placeholder="1, 2"></div>
-                    <div class="col-full"><label>Investigation Disclosure (End of Day)</label><textarea
-                            class="cd-pending"
-                            rows="2">Investigation in this case is pending for examination of some more witnesses and tracing of the accused.</textarea>
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="witness-parent">Father/Husband's Name</label>
+                            <input type="text" id="witness-parent" placeholder="e.g., S/o Ramana">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="witness-address">Occupation & Address</label>
+                            <input type="text" id="witness-address" placeholder="e.g., Farmer, Badvel">
+                        </div>
+                    </div>
+                    <div class="form-input-group">
+                        <label for="witness-statement">Witness Statement</label>
+                        <div class="mic-wrapper">
+                            <textarea id="witness-statement" rows="6"
+                                placeholder="Dictate the exact statement given by the witness..."></textarea>
+                            <button class="mic-btn" data-target="witness-statement" title="Click to dictate">🎤</button>
+                        </div>
+                    </div>
+                    <button id="add-witness-btn" class="secondary-btn">Save Witness Statement</button>
+                </div>
+
+                <div class="recorded-witnesses-container">
+                    <h3>Recorded Statements</h3>
+                    <ul id="witness-list" class="witness-list">
+                    </ul>
+                </div>
+                <button id="generate-part2" class="primary-btn">Download Complete Part-II CD</button>
+            </section>
+
+            <section id="mahazzars" class="tab-pane">
+                <h2>Scene Observation Mahazzar</h2>
+                <div class="card-container">
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="panchayatdar1">1st Panchayatdar (Name & Address)</label>
+                            <input type="text" id="panchayatdar1" placeholder="e.g., K. Rama Rao...">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="panchayatdar2">2nd Panchayatdar (Name & Address)</label>
+                            <input type="text" id="panchayatdar2" placeholder="e.g., M. Srinivas...">
+                        </div>
+                    </div>
+
+                    <div class="boundaries-grid">
+                        <h3>Scene Boundaries</h3>
+                        <div class="boundary-input">
+                            <label for="boundary-east">East:</label>
+                            <div class="mic-wrapper">
+                                <textarea id="boundary-east" rows="2"
+                                    placeholder="Dictate eastern boundary..."></textarea>
+                                <button class="mic-btn" data-target="boundary-east" title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                        <div class="boundary-input">
+                            <label for="boundary-west">West:</label>
+                            <div class="mic-wrapper">
+                                <textarea id="boundary-west" rows="2"
+                                    placeholder="Dictate western boundary..."></textarea>
+                                <button class="mic-btn" data-target="boundary-west" title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                        <div class="boundary-input">
+                            <label for="boundary-north">North:</label>
+                            <div class="mic-wrapper">
+                                <textarea id="boundary-north" rows="2"
+                                    placeholder="Dictate northern boundary..."></textarea>
+                                <button class="mic-btn" data-target="boundary-north"
+                                    title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                        <div class="boundary-input">
+                            <label for="boundary-south">South:</label>
+                            <div class="mic-wrapper">
+                                <textarea id="boundary-south" rows="2"
+                                    placeholder="Dictate southern boundary..."></textarea>
+                                <button class="mic-btn" data-target="boundary-south"
+                                    title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-input-group">
+                        <label for="scene-description">Detailed Scene Observation</label>
+                        <div class="mic-wrapper">
+                            <textarea id="scene-description" rows="4"
+                                placeholder="Dictate the exact details of the crime scene..."></textarea>
+                            <button class="mic-btn" data-target="scene-description" title="Click to dictate">🎤</button>
+                        </div>
+                    </div>
+                    <button id="generate-mahazzar" class="primary-btn">Download Mahazzar Document</button>
+                </div>
+            </section>
+
+            <section id="arrest-remand" class="tab-pane">
+                <h2>Arrest & Remand Reports</h2>
+                <div class="card-container">
+                    <h3>Accused Details</h3>
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="accused-name">Name of the Accused & Age</label>
+                            <input type="text" id="accused-name" placeholder="e.g., S. Venkat, 28 yrs">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="accused-parent">Father/Husband's Name</label>
+                            <input type="text" id="accused-parent" placeholder="e.g., S/o Subbaiah">
+                        </div>
+                    </div>
+                    <div class="form-input-group">
+                        <label for="accused-address">Complete Address</label>
+                        <input type="text" id="accused-address" placeholder="e.g., Door No, Street, Village/Town...">
                     </div>
                 </div>
-            </div>
-            <button class="btn btn-outline" onclick="addCD()">+ Add Next Day C.D.</button>
-        </div>
 
-        <div class="section">
-            <div class="sec-title">6. Arrest C.D. & Remand Report (Optional)</div>
-            <div class="row">
-                <div class="col"><label>Arrest Date & Time</label><input type="text" id="arrestDateTime"
-                        placeholder="e.g., On 20.12.2024 at 10:00 AM"></div>
-                <div class="col"><label>Place of Arrest</label><input type="text" id="arrestPlace"
-                        placeholder="e.g., Badvel Bus Stand"></div>
-            </div>
-            <div class="col-full">
-                <label>Confession Details (Translated)</label>
-                <textarea id="confessionBody" rows="4" placeholder="Accused confessed that..."></textarea>
-            </div>
-            <div class="col-full">
-                <label>Remand Request Reason</label>
-                <textarea id="remandReason"
-                    rows="2">I request the Hon'ble Court to remand the accused into judicial custody for 14 days to enable me to complete the investigation.</textarea>
-            </div>
-        </div>
+                <div class="card-container">
+                    <h3>Arrest Specifics</h3>
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="arrest-date-time">Date & Time of Arrest</label>
+                            <input type="datetime-local" id="arrest-date-time">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="arrest-location">Place of Arrest</label>
+                            <input type="text" id="arrest-location" placeholder="e.g., RTC Bus Stand, Badvel">
+                        </div>
+                    </div>
+                    <div class="form-input-group">
+                        <label for="confession-statement">Confession Statement</label>
+                        <div class="mic-wrapper">
+                            <textarea id="confession-statement" rows="8"
+                                placeholder="Dictate the full confession statement here..."></textarea>
+                            <button class="mic-btn" data-target="confession-statement"
+                                title="Click to dictate">🎤</button>
+                        </div>
+                    </div>
+                </div>
 
-        <button class="btn btn-main" onclick="generateAllDocuments()">⚡ GENERATE C.D. PART-I, ARREST C.D. & REMAND
-            REPORT</button>
-        <div id="hiddenOutput" style="display:none;"></div>
+                <div class="form-group-row">
+                    <button id="generate-arrest-memo" class="secondary-btn"
+                        style="flex: 1; margin-right: 10px;">Download Arrest Memo</button>
+                    <button id="generate-remand-report" class="primary-btn" style="flex: 2;">Download Remand
+                        Report</button>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <script>
-        let witnessCount = 1;
-        let cdCount = 1;
-
-        // --- 1. FILE UPLOAD HANDLER ---
-        function handleFileUpload(event, targetId) {
-            const file = event.target.files[0];
-            if (!file) return;
-            let statusSpan = event.target.nextElementSibling;
-            if (statusSpan) statusSpan.innerText = `Loading...`;
-
-            if (file.name.endsWith('.docx')) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    mammoth.extractRawText({ arrayBuffer: e.target.result }).then(function (result) {
-                        document.getElementById(targetId).value = result.value;
-                        if (statusSpan) statusSpan.innerText = "Loaded ✔️";
-                    });
-                };
-                reader.readAsArrayBuffer(file);
-            } else {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById(targetId).value = e.target.result;
-                    if (statusSpan) statusSpan.innerText = "Loaded ✔️";
-                };
-                reader.readAsText(file);
-            }
-        }
-
-        // --- 2. GOOGLE TRANSLATE API (FIXED WITH POST) & EXTRACTION ---
-        async function translateText(text) {
-            if (!text) return "";
-            try {
-                // Using POST to avoid long URL crashes with large documents
-                let res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=te&tl=en&dt=t`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({ q: text })
-                });
-                let json = await res.json();
-                return json[0].map(x => x[0]).join('');
-            } catch (e) {
-                console.error("Translation failed:", e);
-                return text; // Fallback to raw text if error
-            }
-        }
-
-        async function translateAndExtract() {
-            let firRaw = document.getElementById('firRaw').value;
-            let compRaw = document.getElementById('complaintRaw').value;
-            let sceneRaw = document.getElementById('sceneRaw').value;
-            let seizureRaw = document.getElementById('seizureRaw').value;
-            let confessionRaw = document.getElementById('confessionRaw').value;
-
-            document.getElementById('loader').style.display = 'block';
-
-            // Translate Complaint
-            if (compRaw) {
-                let engComp = await translateText(compRaw);
-                document.getElementById('complaintBody').value = engComp;
-            }
-
-            // Translate Scene/Seizure/Confession
-            if (sceneRaw) document.getElementById('cd1-actions').value = await translateText(sceneRaw);
-            if (seizureRaw) document.getElementById('cd1-actions').value += "\n\n" + await translateText(seizureRaw);
-            if (confessionRaw) document.getElementById('confessionBody').value = await translateText(confessionRaw);
-
-            // Extract from FIR
-            if (firRaw) {
-                let engFir = firRaw;
-
-                let crMatch = engFir.match(/Cr\.?No\.?\s*[:\-]?\s*(\d+\/\d{4})/i) || engFir.match(/FIR No\.\s*[:\-]?\s*(\d+\/\d{4})/i);
-                if (crMatch) document.getElementById('crNo').value = crMatch[1].trim();
-
-                let secMatch = engFir.match(/U\/s\s*[:\-]?\s*(.*?)(?=\n|Date)/i) || engFir.match(/Act & Section.*?:(.*?)(?=\n|3\.)/is);
-                if (secMatch) document.getElementById('sectionsOfLaw').value = secMatch[1].trim();
-
-                let dtMatch = engFir.match(/Date and time of occurrence\s*[:\-]\s*(.*?)\n/i);
-                let plMatch = engFir.match(/Place of occurrence\s*[:\-]\s*(.*?\n.*?\n)/i) || engFir.match(/Distance and Direction from P\.S\s*(.*?)\n/is);
-                if (dtMatch || plMatch) document.getElementById('dateTimePlace').value = `Occurred on ${dtMatch ? dtMatch[1] : ''} at ${plMatch ? plMatch[1] : ''}`.replace(/\n/g, " ").trim();
-
-                let c1 = engFir.match(/Action taken.*?[:\-]\s*(.*?)\n/i) || engFir.match(/Information received at P\.S\..*?Date\s*(.*?)\s*Time/is);
-                if (c1) document.getElementById('col1').value = c1[1].trim();
-
-                let c2 = engFir.match(/Name of the Complainant.*?[:\-]\s*(.*?)\n/i);
-                if (c2) {
-                    document.getElementById('col2').value = c2[1].trim();
-                    document.getElementById('lw1-name').value = c2[1].trim();
-                }
-
-                let c3 = engFir.match(/Names of the accused.*?[:\-]\s*(.*?)(?=\n4\.)/is);
-                if (c3) document.getElementById('col3').value = c3[1].trim();
-
-                let c6 = engFir.match(/FIR No\..*?Date\s*[:\-]\s*(.*?)\n/i);
-                if (c6) document.getElementById('col6').value = c6[1].trim();
-            }
-
-            generatePreamble();
-            document.getElementById('loader').style.display = 'none';
-            alert("Translation & Auto-Fill Completed!");
-        }
-
-        // --- 3. PREAMBLE GENERATOR ---
-        function generatePreamble() {
-            let sec = document.getElementById('sectionsOfLaw').value || "[Sections]";
-            let dtpl = document.getElementById('dateTimePlace').value || "[Date and Place]";
-            let accused = document.getElementById('col3').value.replace(/\n/g, ", ") || "[Accused]";
-            let compName = document.getElementById('col2').value || "[Complainant]";
-            let repTime = document.getElementById('col1').value || "[Report Time]";
-
-            let preamble = `I submit that this is a case involving offence U/s ${sec} that ${dtpl.toLowerCase()} and reported in the P.S. on ${repTime}, in which the accused ${accused} with a preplan and preparation attacked the complainant ${compName} and threatened to kill him if he reported the incident. Due to fear, the complainant delayed, and today he reported the matter with the Police.`;
-            document.getElementById('preambleBox').value = preamble;
-
-            document.getElementById('complaintIntro').value = `Today i.e., on ${repTime}, the complainant ${compName} came to PS and presented a written complaint which runs as follows:`;
-        }
-
-        // --- 4. GIST EXTRACTOR ---
-        async function extractGists() {
-            let raw = document.getElementById('statementsRaw').value;
-            if (!raw) { alert("Please upload statements document first."); return; }
-
-            let engText = await translateText(raw);
-
-            let blocks = engText.split(/(?=LW\s*-\s*\d+|L\.W\.\s*\d+)/i);
-            blocks.forEach(block => {
-                let match = block.match(/(?:LW\s*-\s*|L\.W\.\s*)(\d+)[\s:]+(.*?)(?:\n|$)/i);
-                if (match) {
-                    let lwNum = parseInt(match[1]);
-                    let nameStr = match[2].replace(/^(is|namely|:)/i, "").trim();
-                    let gistBody = block.replace(match[0], "").replace(/on examination (he|she) stated that/gi, "He stated that").trim();
-
-                    while (witnessCount < lwNum) addWitness();
-                    if (document.getElementById(`lw${lwNum}-name`)) document.getElementById(`lw${lwNum}-name`).value = nameStr;
-                    if (document.getElementById(`lw${lwNum}-gist`)) document.getElementById(`lw${lwNum}-gist`).value = gistBody;
-                }
-            });
-            alert("Witness Gists Extracted Successfully!");
-        }
-
-        // --- 5. UI DYNAMICS ---
-        function addWitness() {
-            witnessCount++;
-            let html = `
-            <div class="witness-card" id="witness-${witnessCount}" data-id="${witnessCount}">
-                <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
-                <h4>LW-${witnessCount}</h4>
-                <div class="row">
-                    <div class="col-full"><label>Name</label><input type="text" class="lw-name" id="lw${witnessCount}-name"></div>
-                    <div class="col-full"><label>Gist of Statement</label><textarea class="lw-gist" id="lw${witnessCount}-gist" rows="2"></textarea></div>
-                </div>
-            </div>`;
-            document.getElementById('witnessContainer').insertAdjacentHTML('beforeend', html);
-        }
-
-        function addCD() {
-            cdCount++;
-            let html = `
-            <div class="cd-card" id="cd-${cdCount}">
-                <button class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
-                <h4>Day ${cdCount} - C.D.</h4>
-                <div class="row"><div class="col"><label>C.D. Date</label><input type="text" class="cd-date"></div></div>
-                <div class="col-full"><label>Investigation Actions</label><textarea class="cd-actions" rows="3"></textarea></div>
-                <div class="col-full"><label>Witnesses Examined (e.g., 3, 4)</label><input type="text" class="cd-witnesses"></div>
-                <div class="col-full"><label>Investigation Disclosure</label><textarea class="cd-pending" rows="2"></textarea></div>
-            </div>`;
-            document.getElementById('cdContainer').insertAdjacentHTML('beforeend', html);
-        }
-
-        // --- 6. WORD DOCUMENT GENERATOR (PART-I, ARREST, REMAND) ---
-        function generateAllDocuments() {
-            let psName = document.getElementById('psName').value;
-            let crNo = document.getElementById('crNo').value;
-            let dist = document.getElementById('district').value;
-            let dtPlace = document.getElementById('dateTimePlace').value;
-            let secLaw = document.getElementById('sectionsOfLaw').value;
-
-            // 8 Columns table
-            let tableHTML = `
-        <table style="width:100%; border-collapse: collapse; font-size: 14px;">
-          <tr><td style="width: 5%; vertical-align: top;">1.</td><td style="width: 45%; vertical-align: top;">Date (with hour) on which action was taken.</td><td style="vertical-align: top;">: ${document.getElementById('col1').value}</td></tr>
-          <tr><td style="vertical-align: top;">2.</td><td style="vertical-align: top;">Name of the Complainant/ Informant.</td><td style="vertical-align: top;">: ${document.getElementById('col2').value}</td></tr>
-          <tr><td style="vertical-align: top;">3.</td><td style="vertical-align: top;">Names of the accused known, if any.</td><td style="vertical-align: top;">:<br>${document.getElementById('col3').value.replace(/\n/g, '<br>')}</td></tr>
-          <tr><td style="vertical-align: top;">4.</td><td style="vertical-align: top;">Property lost.</td><td style="vertical-align: top;">: ${document.getElementById('col4').value}</td></tr>
-          <tr><td style="vertical-align: top;">5.</td><td style="vertical-align: top;">Property recovered.</td><td style="vertical-align: top;">: ${document.getElementById('col5').value}</td></tr>
-          <tr><td style="vertical-align: top;">6.</td><td style="vertical-align: top;">FIR dated.</td><td style="vertical-align: top;">: ${document.getElementById('col6').value}</td></tr>
-          <tr><td style="vertical-align: top;">7.</td><td style="vertical-align: top;">Name of the deceased, if any.</td><td style="vertical-align: top;">: ${document.getElementById('col7').value}</td></tr>
-        `;
-
-            let allWitnesses = [];
-            document.querySelectorAll('.witness-card').forEach(card => {
-                let idNum = card.getAttribute('data-id');
-                let name = card.querySelector('.lw-name').value.trim();
-                let gist = card.querySelector('.lw-gist').value.trim();
-                if (name) allWitnesses.push({ id: idNum, name: name, gist: gist });
-            });
-            let col8Text = allWitnesses.length > 0 ? allWitnesses.map(w => `LW-${w.id}: ${w.name}`).join('<br>') : "Nil";
-            tableHTML += `<tr><td style="vertical-align: top;">8.</td><td style="vertical-align: top;">Witnesses examined (L.Ws).</td><td style="vertical-align: top;">:<br>${col8Text}</td></tr></table>`;
-
-            let finalHTML = "";
-
-            // GENERATE PART-I CDs
-            let cdCards = document.querySelectorAll('.cd-card');
-            cdCards.forEach((cd, index) => {
-                let cdDate = cd.querySelector('.cd-date').value;
-                let cdActions = cd.querySelector('.cd-actions').value;
-                let cdLws = cd.querySelector('.cd-witnesses').value;
-                let cdPending = cd.querySelector('.cd-pending').value;
-
-                let cdBlock = `<p style="text-align:center; font-weight:bold; font-size: 16px;">CASE DIARY PART – I</p>`;
-                cdBlock += `<p style="text-align:justify; font-weight:bold;">${psName} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Cr.No.${crNo} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${dist}</p>`;
-                cdBlock += `<p><b>Date, time and Place of occurrence:</b> ${dtPlace}</p><p><b>Offence U/s:</b> ${secLaw}</p><hr>${tableHTML}<hr>`;
-                cdBlock += `<p style="text-align:center; font-weight:bold; font-size: 15px; text-decoration: underline;">C.D. Dated: ${cdDate}</p>`;
-
-                if (index === 0) {
-                    cdBlock += `<p style="text-indent: 40px; text-align: justify;">${document.getElementById('preambleBox').value}</p>`;
-                    cdBlock += `<p style="text-indent: 40px; text-align: justify;">${document.getElementById('complaintIntro').value}</p>`;
-                    cdBlock += `<p style="margin: 10px 40px; text-align: justify; font-style: italic;">"${document.getElementById('complaintBody').value.replace(/\n/g, '<br>')}"</p>`;
-                    cdBlock += `<p style="text-indent: 40px; text-align: justify;">Basing on the above complaint, I registered a case in Cr.No. ${crNo} U/s ${secLaw} of ${psName} and took up investigation.</p>`;
-                }
-
-                if (cdActions) cdBlock += `<p style="text-indent: 40px; text-align: justify;">${cdActions.replace(/\n/g, '<br>')}</p>`;
-
-                if (cdLws) {
-                    let lwArray = cdLws.split(',').map(s => s.replace(/\D/g, '').trim()).filter(Boolean);
-                    let matched = allWitnesses.filter(w => lwArray.includes(String(w.id)));
-                    if (matched.length > 0) {
-                        cdBlock += `<p style="text-indent: 40px; text-align: justify;">I examined the following witnesses u/s 160(3)/180(3) BNSS and recorded their statements in my Part-II C.D.</p>`;
-                        matched.forEach(w => {
-                            cdBlock += `<p style="margin: 10px 0 2px 0;"><b>LW-${w.id}: ${w.name}</b></p>`;
-                            cdBlock += `<p style="text-align: justify; margin-top: 2px;">${w.gist.replace(/\n/g, '<br>')}</p>`;
-                        });
-                    }
-                }
-
-                if (cdPending) cdBlock += `<p style="text-indent: 40px; text-align: justify;"><b>Investigation Disclosure:</b> ${cdPending}</p>`;
-                cdBlock += `<p style="text-align:right; margin-top:30px;"><b>Investigating Officer,</b><br>${psName}.</p><br clear="all" style="page-break-before:always" />`;
-                finalHTML += cdBlock;
-            });
-
-            // GENERATE ARREST CD
-            let arrDt = document.getElementById('arrestDateTime').value;
-            let arrPl = document.getElementById('arrestPlace').value;
-            let confBody = document.getElementById('confessionBody').value;
-
-            if (arrDt && confBody) {
-                finalHTML += `<p style="text-align:center; font-weight:bold; font-size: 16px;">ARREST CASE DIARY</p>`;
-                finalHTML += `<p style="text-align:justify; font-weight:bold;">${psName} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Cr.No.${crNo}</p><hr>`;
-                finalHTML += `<p style="text-indent: 40px; text-align: justify;">${arrDt}, I along with my staff proceeded to ${arrPl} and apprehended the accused. On interrogation, the accused voluntarily confessed to the crime. The gist of the confession is as follows:</p>`;
-                finalHTML += `<p style="margin: 10px 40px; text-align: justify; font-style: italic;">"${confBody.replace(/\n/g, '<br>')}"</p>`;
-                finalHTML += `<p style="text-indent: 40px; text-align: justify;">After recording the confession and preparing the arrest panchanama, the accused was brought to the P.S. and is being forwarded for judicial remand.</p>`;
-                finalHTML += `<p style="text-align:right; margin-top:30px;"><b>Investigating Officer,</b><br>${psName}.</p><br clear="all" style="page-break-before:always" />`;
-            }
-
-            // GENERATE REMAND REPORT
-            if (arrDt) {
-                finalHTML += `<p style="text-align:center; font-weight:bold; font-size: 16px; text-decoration: underline;">REMAND REPORT</p>`;
-                finalHTML += `<p><b>IN THE COURT OF THE HON'BLE MAGISTRATE</b></p>`;
-                finalHTML += `<p><b>Cr.No:</b> ${crNo} of ${psName}</p>`;
-                finalHTML += `<p><b>Offence U/s:</b> ${secLaw}</p>`;
-                finalHTML += `<p style="text-indent: 40px; text-align: justify;">May it please your honour,</p>`;
-                finalHTML += `<p style="text-indent: 40px; text-align: justify;">I submit that this is a case where the accused committed the offence u/s ${secLaw}. The brief facts of the case are that ${document.getElementById('preambleBox').value.replace('I submit that ', '')}</p>`;
-                finalHTML += `<p style="text-indent: 40px; text-align: justify;">During the course of investigation, on ${arrDt}, I arrested the accused at ${arrPl} and recorded their confession. ${document.getElementById('remandReason').value}</p>`;
-                finalHTML += `<p style="text-indent: 40px; text-align: justify;">Hence, I pray the Hon'ble Court to remand the accused into judicial custody.</p>`;
-                finalHTML += `<p style="text-align:right; margin-top:30px;"><b>Investigating Officer,</b><br>${psName}.</p>`;
-            }
-
-            // Download Word
-            var header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>CD & Remand Report</title><style>body { font-family: 'Times New Roman', serif; font-size: 13pt; } table td { padding: 3px; }</style></head><body>";
-            var sourceHTML = header + finalHTML + "</body></html>";
-            var blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement("a");
-            a.href = url; a.download = `CD_Arrest_Remand_${crNo.replace('/', '_')}.doc`;
-            document.body.appendChild(a); a.click();
-            document.body.removeChild(a); URL.revokeObjectURL(url);
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
