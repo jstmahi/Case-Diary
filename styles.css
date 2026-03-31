@@ -355,3 +355,77 @@ body {
     display: block;
     margin-top: 8px;
 }
+/* --- NEW ADDITIONS FOR RESPONSIVENESS & UX --- */
+
+/* Premium Input Focus States */
+.form-input-group input:focus, 
+.mic-wrapper textarea:focus {
+    outline: none;
+    border-color: #007aff;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
+    background-color: #ffffff;
+}
+
+/* Toast Notification System */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background-color: #1d1d1f;
+    color: #ffffff;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideInRight 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), fadeOut 0.4s ease 3s forwards;
+    max-width: 350px;
+}
+
+.toast.error {
+    background-color: #ff3b30;
+}
+
+.toast.success {
+    background-color: #34c759;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; visibility: hidden; margin-top: -50px; }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .form-group-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .upload-grid {
+        flex-direction: column;
+    }
+    
+    .ios-tabs {
+        border-radius: 8px;
+    }
+    
+    .app-container {
+        padding: 15px;
+        border-radius: 0;
+    }
+}
