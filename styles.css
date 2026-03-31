@@ -17,8 +17,14 @@ body {
 }
 
 .app-header {
-    text-align: center;
     margin-bottom: 30px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    text-align: left;
 }
 
 .app-header h1 {
@@ -169,7 +175,9 @@ body {
     border-radius: 8px;
     font-family: inherit;
     font-size: 14px;
-    resize: vertical;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.5;
 }
 
 /* Apple-Style Mic Button */
@@ -254,6 +262,24 @@ body {
     background-color: #d2d2d7;
 }
 
+/* Danger Button (Clear Drafts) */
+.danger-btn {
+    background-color: #ffe5e5;
+    color: #ff3b30;
+    border: 1px solid #ff3b30;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.danger-btn:hover {
+    background-color: #ff3b30;
+    color: white;
+}
+
 /* Witness List Styling */
 .recorded-witnesses-container h3 {
     font-size: 16px;
@@ -300,6 +326,7 @@ body {
 .witness-list li .remove-btn:hover {
     background: #ffcccc;
 }
+
 /* ADD THIS TO THE VERY BOTTOM OF YOUR EXISTING styles.css FILE */
 
 /* Upload Zones */
@@ -338,7 +365,7 @@ body {
     font-size: 12px;
     font-weight: 600;
     border: 1px solid #e3e3e8;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     margin-top: 10px;
     transition: transform 0.1s ease;
 }
@@ -355,15 +382,22 @@ body {
     display: block;
     margin-top: 8px;
 }
+
 /* --- NEW ADDITIONS FOR RESPONSIVENESS & UX --- */
 
 /* Premium Input Focus States */
-.form-input-group input:focus, 
+.form-input-group input:focus,
 .mic-wrapper textarea:focus {
     outline: none;
     border-color: #007aff;
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
     background-color: #ffffff;
+}
+
+/* Tab Focus State for Accessibility */
+.tab-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.3);
 }
 
 /* Toast Notification System */
@@ -401,12 +435,23 @@ body {
 }
 
 @keyframes slideInRight {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 @keyframes fadeOut {
-    to { opacity: 0; visibility: hidden; margin-top: -50px; }
+    to {
+        opacity: 0;
+        visibility: hidden;
+        margin-top: -50px;
+    }
 }
 
 /* Mobile Responsiveness */
@@ -415,15 +460,15 @@ body {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .upload-grid {
         flex-direction: column;
     }
-    
+
     .ios-tabs {
         border-radius: 8px;
     }
-    
+
     .app-container {
         padding: 15px;
         border-radius: 0;

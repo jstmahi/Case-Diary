@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,252 +8,292 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="app-container">
         <header class="app-header">
-            <h1>Case File Drafter</h1>
-            <p class="subtitle">Select a section to begin drafting</p>
+            <div class="header-content">
+                <div>
+                    <h1>Case File Drafter</h1>
+                    <p class="subtitle" style="margin-top: 5px;">Select a section to begin drafting</p>
+                </div>
+                <button type="button" id="clear-draft-btn" class="danger-btn"
+                    title="Clear all saved drafts and reset form">Clear Drafts</button>
+            </div>
         </header>
 
-        <nav class="ios-tabs" aria-label="Tabs">
-            <button class="tab-btn active" data-tab="basic-info">Basic Info & Uploads</button>
-            <button class="tab-btn" data-tab="part1-cd">Part-I CD</button>
-            <button class="tab-btn" data-tab="witnesses-part2">Witnesses & Part-II</button>
-            <button class="tab-btn" data-tab="mahazzars">Mahazzars & Seizures</button>
-            <button class="tab-btn" data-tab="arrest-remand">Arrest/Remand</button>
+        <nav class="ios-tabs" aria-label="Drafting Sections" role="tablist">
+            <button role="tab" aria-selected="true" aria-controls="basic-info" class="tab-btn active"
+                data-tab="basic-info">Basic Info & Uploads</button>
+            <button role="tab" aria-selected="false" aria-controls="part1-cd" class="tab-btn" data-tab="part1-cd">Part-I
+                CD</button>
+            <button role="tab" aria-selected="false" aria-controls="witnesses-part2" class="tab-btn"
+                data-tab="witnesses-part2">Witnesses & Part-II</button>
+            <button role="tab" aria-selected="false" aria-controls="mahazzars" class="tab-btn"
+                data-tab="mahazzars">Mahazzars & Seizures</button>
+            <button role="tab" aria-selected="false" aria-controls="arrest-remand" class="tab-btn"
+                data-tab="arrest-remand">Arrest/Remand</button>
         </nav>
 
         <main class="tab-content-container">
+            <form id="main-draft-form">
 
-            <section id="basic-info" class="tab-pane active">
-                <h2>1. Document Uploads & Auto-Fill</h2>
-                <div class="card-container">
-                    <div class="upload-grid">
-                        <div class="upload-zone">
-                            <strong>📄 FIR</strong>
-                            <label class="upload-btn" for="fileFIR">Choose File</label>
-                            <input type="file" id="fileFIR" accept=".docx,.txt">
-                            <span class="helper-text" id="firStatus">No file</span>
-                        </div>
-                        <div class="upload-zone">
-                            <strong>📄 Complaint</strong>
-                            <label class="upload-btn" for="fileComplaint">Choose File</label>
-                            <input type="file" id="fileComplaint" accept=".docx,.txt">
-                            <span class="helper-text" id="compStatus">No file</span>
-                        </div>
-                        <div class="upload-zone">
-                            <strong>📄 Statements</strong>
-                            <label class="upload-btn" for="fileStatements">Choose File</label>
-                            <input type="file" id="fileStatements" accept=".docx,.txt">
-                            <span class="helper-text" id="stmtStatus">No file</span>
-                        </div>
-                    </div>
-                    
-                    <button id="btn-translate-extract" class="primary-btn" style="margin-top: 15px;">🌐 TRANSLATE TO ENGLISH & AUTO-FILL</button>
-                    <div id="loader" style="display:none; text-align:center; margin-top:10px; color:#007aff; font-weight:bold;">Translating and Extracting Details... Please wait ⏳</div>
-                    
-                    <div style="display:none;">
-                        <textarea id="firRaw"></textarea>
-                        <textarea id="complaintRaw"></textarea>
-                        <textarea id="statementsRaw"></textarea>
-                        <textarea id="preambleBox"></textarea> 
-                        <textarea id="complaintBody"></textarea> 
-                    </div>
-                </div>
-
-                <h2>2. FIR & Basic Details</h2>
-                <div class="card-container">
-                    <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="ps-name">Police Station</label>
-                            <input type="text" id="ps-name" value="BADVEL U/G P.S.">
-                        </div>
-                        <div class="form-input-group">
-                            <label for="district">District</label>
-                            <input type="text" id="district" value="Y.S.R. Kadapa Dist.">
-                        </div>
-                    </div>
-                    <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="crime-no">Crime Number <span style="color:#ff3b30">*</span></label>
-                            <input type="text" id="crime-no" placeholder="e.g., 45/2026" required>
-                        </div>
-                        <div class="form-input-group">
-                            <label for="sections-of-law">Sections of Law</label>
-                            <input type="text" id="sections-of-law" placeholder="e.g., 379 IPC">
-                        </div>
-                    </div>
-                    <div class="form-input-group">
-                        <label for="complainant-name">Complainant Name</label>
-                        <input type="text" id="complainant-name" placeholder="Name of the complainant">
-                    </div>
-                </div>
-            </section>
-
-            <section id="part1-cd" class="tab-pane">
-                <h2>Part-I CD (Investigation Gist)</h2>
-                <div class="card-container">
-                    <div class="form-input-group">
-                        <label for="investigation-gist">Gist of Investigation</label>
-                        <div class="mic-wrapper">
-                            <textarea id="investigation-gist" rows="12" placeholder="Dictate the gist of the investigation here..."></textarea>
-                            <button class="mic-btn" data-target="investigation-gist" title="Click to dictate">🎤</button>
-                        </div>
-                    </div>
-                    <button id="generate-part1" class="primary-btn">Download Part-I CD</button>
-                </div>
-            </section>
-
-            <section id="witnesses-part2" class="tab-pane">
-                <h2>Part-II CD: Witness Statements</h2>
-                <button id="btn-extract-gists" class="secondary-btn" style="margin-bottom:15px; width:100%;">📥 Auto-Extract Gists from Uploaded Statements</button>
-                
-                <div class="card-container">
-                    <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="witness-lw">L.W. Number</label>
-                            <input type="text" id="witness-lw" placeholder="e.g., L.W. 1">
-                        </div>
-                        <div class="form-input-group">
-                            <label for="witness-name">Name & Age</label>
-                            <input type="text" id="witness-name" placeholder="e.g., P. Ravi, 35 yrs">
-                        </div>
-                    </div>
-                    <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="witness-parent">Father/Husband's Name</label>
-                            <input type="text" id="witness-parent" placeholder="e.g., S/o Ramana">
-                        </div>
-                        <div class="form-input-group">
-                            <label for="witness-address">Occupation & Address</label>
-                            <input type="text" id="witness-address" placeholder="e.g., Farmer, Badvel">
-                        </div>
-                    </div>
-                    <div class="form-input-group">
-                        <label for="witness-statement">Witness Statement</label>
-                        <div class="mic-wrapper">
-                            <textarea id="witness-statement" rows="6" placeholder="Dictate the exact statement given by the witness..."></textarea>
-                            <button class="mic-btn" data-target="witness-statement" title="Click to dictate">🎤</button>
-                        </div>
-                    </div>
-                    <button id="add-witness-btn" class="secondary-btn">Save Witness Statement</button>
-                </div>
-
-                <div class="recorded-witnesses-container">
-                    <h3>Recorded Statements</h3>
-                    <ul id="witness-list" class="witness-list"></ul>
-                </div>
-                <button id="generate-part2" class="primary-btn">Download Complete Part-II CD</button>
-            </section>
-
-            <section id="mahazzars" class="tab-pane">
-                <h2>Scene Observation Mahazzar</h2>
-                <div class="card-container">
-                    <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="panchayatdar1">1st Panchayatdar (Name & Address)</label>
-                            <input type="text" id="panchayatdar1" placeholder="e.g., K. Rama Rao...">
-                        </div>
-                        <div class="form-input-group">
-                            <label for="panchayatdar2">2nd Panchayatdar (Name & Address)</label>
-                            <input type="text" id="panchayatdar2" placeholder="e.g., M. Srinivas...">
-                        </div>
-                    </div>
-
-                    <div class="boundaries-grid">
-                        <h3>Scene Boundaries</h3>
-                        <div class="boundary-input">
-                            <label for="boundary-east">East:</label>
-                            <div class="mic-wrapper">
-                                <textarea id="boundary-east" rows="2" placeholder="Dictate eastern boundary..."></textarea>
-                                <button class="mic-btn" data-target="boundary-east" title="Click to dictate">🎤</button>
+                <section id="basic-info" role="tabpanel" class="tab-pane active">
+                    <h2>1. Document Uploads & Auto-Fill</h2>
+                    <div class="card-container">
+                        <div class="upload-grid">
+                            <div class="upload-zone">
+                                <strong>📄 FIR</strong>
+                                <label class="upload-btn" for="fileFIR">Choose File</label>
+                                <input type="file" id="fileFIR" accept=".docx,.txt">
+                                <span class="helper-text" id="firStatus">No file</span>
+                            </div>
+                            <div class="upload-zone">
+                                <strong>📄 Complaint</strong>
+                                <label class="upload-btn" for="fileComplaint">Choose File</label>
+                                <input type="file" id="fileComplaint" accept=".docx,.txt">
+                                <span class="helper-text" id="compStatus">No file</span>
+                            </div>
+                            <div class="upload-zone">
+                                <strong>📄 Statements</strong>
+                                <label class="upload-btn" for="fileStatements">Choose File</label>
+                                <input type="file" id="fileStatements" accept=".docx,.txt">
+                                <span class="helper-text" id="stmtStatus">No file</span>
                             </div>
                         </div>
-                        <div class="boundary-input">
-                            <label for="boundary-west">West:</label>
-                            <div class="mic-wrapper">
-                                <textarea id="boundary-west" rows="2" placeholder="Dictate western boundary..."></textarea>
-                                <button class="mic-btn" data-target="boundary-west" title="Click to dictate">🎤</button>
+
+                        <button type="button" id="btn-translate-extract" class="primary-btn"
+                            style="margin-top: 15px;">🌐 TRANSLATE TO ENGLISH & AUTO-FILL</button>
+                        <div id="loader"
+                            style="display:none; text-align:center; margin-top:10px; color:#007aff; font-weight:bold;">
+                            Translating and Extracting Details... Please wait ⏳
+                        </div>
+
+                        <div style="display:none;">
+                            <textarea id="firRaw"></textarea>
+                            <textarea id="complaintRaw"></textarea>
+                            <textarea id="statementsRaw"></textarea>
+                            <textarea id="preambleBox"></textarea>
+                            <textarea id="complaintBody"></textarea>
+                        </div>
+                    </div>
+
+                    <h2>2. FIR & Basic Details</h2>
+                    <div class="card-container">
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="ps-name">Police Station</label>
+                                <input type="text" id="ps-name" value="BADVEL U/G P.S.">
+                            </div>
+                            <div class="form-input-group">
+                                <label for="district">District</label>
+                                <input type="text" id="district" value="Y.S.R. Kadapa Dist.">
                             </div>
                         </div>
-                        <div class="boundary-input">
-                            <label for="boundary-north">North:</label>
-                            <div class="mic-wrapper">
-                                <textarea id="boundary-north" rows="2" placeholder="Dictate northern boundary..."></textarea>
-                                <button class="mic-btn" data-target="boundary-north" title="Click to dictate">🎤</button>
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="crime-no">Crime Number <span style="color:#ff3b30">*</span></label>
+                                <input type="text" id="crime-no" placeholder="e.g., 45/2026" required>
+                            </div>
+                            <div class="form-input-group">
+                                <label for="sections-of-law">Sections of Law</label>
+                                <input type="text" id="sections-of-law" placeholder="e.g., 379 IPC">
                             </div>
                         </div>
-                        <div class="boundary-input">
-                            <label for="boundary-south">South:</label>
+                        <div class="form-input-group">
+                            <label for="complainant-name">Complainant Name</label>
+                            <input type="text" id="complainant-name" placeholder="Name of the complainant">
+                        </div>
+                    </div>
+                </section>
+
+                <section id="part1-cd" role="tabpanel" hidden class="tab-pane">
+                    <h2>Part-I CD (Investigation Gist)</h2>
+                    <div class="card-container">
+                        <div class="form-input-group">
+                            <label for="investigation-gist">Gist of Investigation</label>
                             <div class="mic-wrapper">
-                                <textarea id="boundary-south" rows="2" placeholder="Dictate southern boundary..."></textarea>
-                                <button class="mic-btn" data-target="boundary-south" title="Click to dictate">🎤</button>
+                                <textarea id="investigation-gist" rows="6"
+                                    placeholder="Dictate the gist of the investigation here..."></textarea>
+                                <button class="mic-btn" data-target="investigation-gist" aria-label="Dictate gist"
+                                    title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                        <button type="button" id="generate-part1" class="primary-btn">Download Part-I CD</button>
+                    </div>
+                </section>
+
+                <section id="witnesses-part2" role="tabpanel" hidden class="tab-pane">
+                    <h2>Part-II CD: Witness Statements</h2>
+                    <button type="button" id="btn-extract-gists" class="secondary-btn"
+                        style="margin-bottom:15px; width:100%;">📥 Auto-Extract Gists from Uploaded Statements</button>
+
+                    <div class="card-container">
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="witness-lw">L.W. Number</label>
+                                <input type="text" id="witness-lw" placeholder="e.g., L.W. 1">
+                            </div>
+                            <div class="form-input-group">
+                                <label for="witness-name">Name & Age</label>
+                                <input type="text" id="witness-name" placeholder="e.g., P. Ravi, 35 yrs">
+                            </div>
+                        </div>
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="witness-parent">Father/Husband's Name</label>
+                                <input type="text" id="witness-parent" placeholder="e.g., S/o Ramana">
+                            </div>
+                            <div class="form-input-group">
+                                <label for="witness-address">Occupation & Address</label>
+                                <input type="text" id="witness-address" placeholder="e.g., Farmer, Badvel">
+                            </div>
+                        </div>
+                        <div class="form-input-group">
+                            <label for="witness-statement">Witness Statement</label>
+                            <div class="mic-wrapper">
+                                <textarea id="witness-statement" rows="3"
+                                    placeholder="Dictate the exact statement given by the witness..."></textarea>
+                                <button class="mic-btn" data-target="witness-statement"
+                                    aria-label="Dictate witness statement" title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                        <button type="button" id="add-witness-btn" class="secondary-btn">Save Witness Statement</button>
+                    </div>
+
+                    <div class="recorded-witnesses-container">
+                        <h3>Recorded Statements</h3>
+                        <ul id="witness-list" class="witness-list"></ul>
+                    </div>
+                    <button type="button" id="generate-part2" class="primary-btn">Download Complete Part-II CD</button>
+                </section>
+
+                <section id="mahazzars" role="tabpanel" hidden class="tab-pane">
+                    <h2>Scene Observation Mahazzar</h2>
+                    <div class="card-container">
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="panchayatdar1">1st Panchayatdar (Name & Address)</label>
+                                <input type="text" id="panchayatdar1" placeholder="e.g., K. Rama Rao...">
+                            </div>
+                            <div class="form-input-group">
+                                <label for="panchayatdar2">2nd Panchayatdar (Name & Address)</label>
+                                <input type="text" id="panchayatdar2" placeholder="e.g., M. Srinivas...">
+                            </div>
+                        </div>
+
+                        <div class="boundaries-grid">
+                            <h3>Scene Boundaries</h3>
+                            <div class="boundary-input">
+                                <label for="boundary-east">East:</label>
+                                <div class="mic-wrapper">
+                                    <textarea id="boundary-east" rows="2"
+                                        placeholder="Dictate eastern boundary..."></textarea>
+                                    <button class="mic-btn" data-target="boundary-east"
+                                        aria-label="Dictate boundary east" title="Click to dictate">🎤</button>
+                                </div>
+                            </div>
+                            <div class="boundary-input">
+                                <label for="boundary-west">West:</label>
+                                <div class="mic-wrapper">
+                                    <textarea id="boundary-west" rows="2"
+                                        placeholder="Dictate western boundary..."></textarea>
+                                    <button class="mic-btn" data-target="boundary-west"
+                                        aria-label="Dictate boundary west" title="Click to dictate">🎤</button>
+                                </div>
+                            </div>
+                            <div class="boundary-input">
+                                <label for="boundary-north">North:</label>
+                                <div class="mic-wrapper">
+                                    <textarea id="boundary-north" rows="2"
+                                        placeholder="Dictate northern boundary..."></textarea>
+                                    <button class="mic-btn" data-target="boundary-north"
+                                        aria-label="Dictate boundary north" title="Click to dictate">🎤</button>
+                                </div>
+                            </div>
+                            <div class="boundary-input">
+                                <label for="boundary-south">South:</label>
+                                <div class="mic-wrapper">
+                                    <textarea id="boundary-south" rows="2"
+                                        placeholder="Dictate southern boundary..."></textarea>
+                                    <button class="mic-btn" data-target="boundary-south"
+                                        aria-label="Dictate boundary south" title="Click to dictate">🎤</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-input-group">
+                            <label for="scene-description">Detailed Scene Observation</label>
+                            <div class="mic-wrapper">
+                                <textarea id="scene-description" rows="4"
+                                    placeholder="Dictate the exact details of the crime scene..."></textarea>
+                                <button class="mic-btn" data-target="scene-description"
+                                    aria-label="Dictate scene description" title="Click to dictate">🎤</button>
+                            </div>
+                        </div>
+                        <button type="button" id="generate-mahazzar" class="primary-btn">Download Mahazzar
+                            Document</button>
+                    </div>
+                </section>
+
+                <section id="arrest-remand" role="tabpanel" hidden class="tab-pane">
+                    <h2>Arrest & Remand Reports</h2>
+                    <div class="card-container">
+                        <h3>Accused Details</h3>
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="accused-name">Name of the Accused & Age</label>
+                                <input type="text" id="accused-name" placeholder="e.g., S. Venkat, 28 yrs">
+                            </div>
+                            <div class="form-input-group">
+                                <label for="accused-parent">Father/Husband's Name</label>
+                                <input type="text" id="accused-parent" placeholder="e.g., S/o Subbaiah">
+                            </div>
+                        </div>
+                        <div class="form-input-group">
+                            <label for="accused-address">Complete Address</label>
+                            <input type="text" id="accused-address"
+                                placeholder="e.g., Door No, Street, Village/Town...">
+                        </div>
+                    </div>
+
+                    <div class="card-container">
+                        <h3>Arrest Specifics</h3>
+                        <div class="form-group-row">
+                            <div class="form-input-group">
+                                <label for="arrest-date-time">Date & Time of Arrest</label>
+                                <input type="datetime-local" id="arrest-date-time">
+                            </div>
+                            <div class="form-input-group">
+                                <label for="arrest-location">Place of Arrest</label>
+                                <input type="text" id="arrest-location" placeholder="e.g., RTC Bus Stand, Badvel">
+                            </div>
+                        </div>
+                        <div class="form-input-group">
+                            <label for="confession-statement">Confession Statement</label>
+                            <div class="mic-wrapper">
+                                <textarea id="confession-statement" rows="4"
+                                    placeholder="Dictate the full confession statement here..."></textarea>
+                                <button class="mic-btn" data-target="confession-statement"
+                                    aria-label="Dictate confession statement" title="Click to dictate">🎤</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-input-group">
-                        <label for="scene-description">Detailed Scene Observation</label>
-                        <div class="mic-wrapper">
-                            <textarea id="scene-description" rows="4" placeholder="Dictate the exact details of the crime scene..."></textarea>
-                            <button class="mic-btn" data-target="scene-description" title="Click to dictate">🎤</button>
-                        </div>
-                    </div>
-                    <button id="generate-mahazzar" class="primary-btn">Download Mahazzar Document</button>
-                </div>
-            </section>
-
-            <section id="arrest-remand" class="tab-pane">
-                <h2>Arrest & Remand Reports</h2>
-                <div class="card-container">
-                    <h3>Accused Details</h3>
                     <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="accused-name">Name of the Accused & Age</label>
-                            <input type="text" id="accused-name" placeholder="e.g., S. Venkat, 28 yrs">
-                        </div>
-                        <div class="form-input-group">
-                            <label for="accused-parent">Father/Husband's Name</label>
-                            <input type="text" id="accused-parent" placeholder="e.g., S/o Subbaiah">
-                        </div>
+                        <button type="button" id="generate-arrest-memo" class="secondary-btn"
+                            style="flex: 1; margin-right: 10px;">Download Arrest Memo</button>
+                        <button type="button" id="generate-remand-report" class="primary-btn" style="flex: 2;">Download
+                            Remand Report</button>
                     </div>
-                    <div class="form-input-group">
-                        <label for="accused-address">Complete Address</label>
-                        <input type="text" id="accused-address" placeholder="e.g., Door No, Street, Village/Town...">
-                    </div>
-                </div>
-
-                <div class="card-container">
-                    <h3>Arrest Specifics</h3>
-                    <div class="form-group-row">
-                        <div class="form-input-group">
-                            <label for="arrest-date-time">Date & Time of Arrest</label>
-                            <input type="datetime-local" id="arrest-date-time">
-                        </div>
-                        <div class="form-input-group">
-                            <label for="arrest-location">Place of Arrest</label>
-                            <input type="text" id="arrest-location" placeholder="e.g., RTC Bus Stand, Badvel">
-                        </div>
-                    </div>
-                    <div class="form-input-group">
-                        <label for="confession-statement">Confession Statement</label>
-                        <div class="mic-wrapper">
-                            <textarea id="confession-statement" rows="8" placeholder="Dictate the full confession statement here..."></textarea>
-                            <button class="mic-btn" data-target="confession-statement" title="Click to dictate">🎤</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group-row">
-                    <button id="generate-arrest-memo" class="secondary-btn" style="flex: 1; margin-right: 10px;">Download Arrest Memo</button>
-                    <button id="generate-remand-report" class="primary-btn" style="flex: 2;">Download Remand Report</button>
-                </div>
-            </section>
+                </section>
+            </form>
         </main>
     </div>
-    
+
     <div id="toast-container"></div>
-    
+
     <script src="script.js"></script>
 </body>
+
 </html>
