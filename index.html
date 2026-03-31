@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Police Force Management & Drafting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
     <div class="app-container">
         <header class="app-header">
@@ -16,7 +15,7 @@
         </header>
 
         <nav class="ios-tabs" aria-label="Tabs">
-            <button class="tab-btn active" data-tab="basic-info">Basic Info</button>
+            <button class="tab-btn active" data-tab="basic-info">Basic Info & Uploads</button>
             <button class="tab-btn" data-tab="part1-cd">Part-I CD</button>
             <button class="tab-btn" data-tab="witnesses-part2">Witnesses & Part-II</button>
             <button class="tab-btn" data-tab="mahazzars">Mahazzars & Seizures</button>
@@ -26,8 +25,52 @@
         <main class="tab-content-container">
 
             <section id="basic-info" class="tab-pane active">
-                <h2>FIR & Basic Details</h2>
+                
+                <h2>1. Document Uploads & Auto-Fill</h2>
                 <div class="card-container">
+                    <div class="upload-grid">
+                        <div class="upload-zone">
+                            <strong>📄 FIR</strong>
+                            <label class="upload-btn" for="fileFIR">Choose File</label>
+                            <input type="file" id="fileFIR" accept=".docx,.txt" onchange="handleFileUpload(event, 'firRaw')">
+                            <span class="helper-text" id="firStatus">No file</span>
+                        </div>
+                        <div class="upload-zone">
+                            <strong>📄 Complaint</strong>
+                            <label class="upload-btn" for="fileComplaint">Choose File</label>
+                            <input type="file" id="fileComplaint" accept=".docx,.txt" onchange="handleFileUpload(event, 'complaintRaw')">
+                            <span class="helper-text" id="compStatus">No file</span>
+                        </div>
+                        <div class="upload-zone">
+                            <strong>📄 Statements</strong>
+                            <label class="upload-btn" for="fileStatements">Choose File</label>
+                            <input type="file" id="fileStatements" accept=".docx,.txt" onchange="handleFileUpload(event, 'statementsRaw')">
+                            <span class="helper-text" id="stmtStatus">No file</span>
+                        </div>
+                    </div>
+                    
+                    <button class="primary-btn" onclick="translateAndExtract()" style="margin-top: 15px;">🌐 TRANSLATE TO ENGLISH & AUTO-FILL</button>
+                    <div id="loader" style="display:none; text-align:center; margin-top:10px; color:#007aff; font-weight:bold;">Translating and Extracting Details... Please wait ⏳</div>
+                    
+                    <div style="display:none;">
+                        <textarea id="firRaw"></textarea>
+                        <textarea id="complaintRaw"></textarea>
+                        <textarea id="statementsRaw"></textarea>
+                        <textarea id="preambleBox"></textarea> <textarea id="complaintBody"></textarea> </div>
+                </div>
+
+                <h2>2. FIR & Basic Details</h2>
+                <div class="card-container">
+                    <div class="form-group-row">
+                        <div class="form-input-group">
+                            <label for="ps-name">Police Station</label>
+                            <input type="text" id="ps-name" value="BADVEL U/G P.S.">
+                        </div>
+                        <div class="form-input-group">
+                            <label for="district">District</label>
+                            <input type="text" id="district" value="Y.S.R. Kadapa Dist.">
+                        </div>
+                    </div>
                     <div class="form-group-row">
                         <div class="form-input-group">
                             <label for="crime-no">Crime Number</label>
@@ -51,10 +94,8 @@
                     <div class="form-input-group">
                         <label for="investigation-gist">Gist of Investigation</label>
                         <div class="mic-wrapper">
-                            <textarea id="investigation-gist" rows="8"
-                                placeholder="Dictate the gist of the investigation here..."></textarea>
-                            <button class="mic-btn" data-target="investigation-gist"
-                                title="Click to dictate">🎤</button>
+                            <textarea id="investigation-gist" rows="12" placeholder="Dictate the gist of the investigation here..."></textarea>
+                            <button class="mic-btn" data-target="investigation-gist" title="Click to dictate">🎤</button>
                         </div>
                     </div>
                     <button id="generate-part1" class="primary-btn">Download Part-I CD</button>
@@ -63,6 +104,8 @@
 
             <section id="witnesses-part2" class="tab-pane">
                 <h2>Part-II CD: Witness Statements</h2>
+                <button class="secondary-btn" onclick="extractGists()" style="margin-bottom:15px; width:100%;">📥 Auto-Extract Gists from Uploaded Statements</button>
+                
                 <div class="card-container">
                     <div class="form-group-row">
                         <div class="form-input-group">
@@ -87,8 +130,7 @@
                     <div class="form-input-group">
                         <label for="witness-statement">Witness Statement</label>
                         <div class="mic-wrapper">
-                            <textarea id="witness-statement" rows="6"
-                                placeholder="Dictate the exact statement given by the witness..."></textarea>
+                            <textarea id="witness-statement" rows="6" placeholder="Dictate the exact statement given by the witness..."></textarea>
                             <button class="mic-btn" data-target="witness-statement" title="Click to dictate">🎤</button>
                         </div>
                     </div>
@@ -97,8 +139,7 @@
 
                 <div class="recorded-witnesses-container">
                     <h3>Recorded Statements</h3>
-                    <ul id="witness-list" class="witness-list">
-                    </ul>
+                    <ul id="witness-list" class="witness-list"></ul>
                 </div>
                 <button id="generate-part2" class="primary-btn">Download Complete Part-II CD</button>
             </section>
@@ -122,35 +163,29 @@
                         <div class="boundary-input">
                             <label for="boundary-east">East:</label>
                             <div class="mic-wrapper">
-                                <textarea id="boundary-east" rows="2"
-                                    placeholder="Dictate eastern boundary..."></textarea>
+                                <textarea id="boundary-east" rows="2" placeholder="Dictate eastern boundary..."></textarea>
                                 <button class="mic-btn" data-target="boundary-east" title="Click to dictate">🎤</button>
                             </div>
                         </div>
                         <div class="boundary-input">
                             <label for="boundary-west">West:</label>
                             <div class="mic-wrapper">
-                                <textarea id="boundary-west" rows="2"
-                                    placeholder="Dictate western boundary..."></textarea>
+                                <textarea id="boundary-west" rows="2" placeholder="Dictate western boundary..."></textarea>
                                 <button class="mic-btn" data-target="boundary-west" title="Click to dictate">🎤</button>
                             </div>
                         </div>
                         <div class="boundary-input">
                             <label for="boundary-north">North:</label>
                             <div class="mic-wrapper">
-                                <textarea id="boundary-north" rows="2"
-                                    placeholder="Dictate northern boundary..."></textarea>
-                                <button class="mic-btn" data-target="boundary-north"
-                                    title="Click to dictate">🎤</button>
+                                <textarea id="boundary-north" rows="2" placeholder="Dictate northern boundary..."></textarea>
+                                <button class="mic-btn" data-target="boundary-north" title="Click to dictate">🎤</button>
                             </div>
                         </div>
                         <div class="boundary-input">
                             <label for="boundary-south">South:</label>
                             <div class="mic-wrapper">
-                                <textarea id="boundary-south" rows="2"
-                                    placeholder="Dictate southern boundary..."></textarea>
-                                <button class="mic-btn" data-target="boundary-south"
-                                    title="Click to dictate">🎤</button>
+                                <textarea id="boundary-south" rows="2" placeholder="Dictate southern boundary..."></textarea>
+                                <button class="mic-btn" data-target="boundary-south" title="Click to dictate">🎤</button>
                             </div>
                         </div>
                     </div>
@@ -158,8 +193,7 @@
                     <div class="form-input-group">
                         <label for="scene-description">Detailed Scene Observation</label>
                         <div class="mic-wrapper">
-                            <textarea id="scene-description" rows="4"
-                                placeholder="Dictate the exact details of the crime scene..."></textarea>
+                            <textarea id="scene-description" rows="4" placeholder="Dictate the exact details of the crime scene..."></textarea>
                             <button class="mic-btn" data-target="scene-description" title="Click to dictate">🎤</button>
                         </div>
                     </div>
@@ -202,25 +236,19 @@
                     <div class="form-input-group">
                         <label for="confession-statement">Confession Statement</label>
                         <div class="mic-wrapper">
-                            <textarea id="confession-statement" rows="8"
-                                placeholder="Dictate the full confession statement here..."></textarea>
-                            <button class="mic-btn" data-target="confession-statement"
-                                title="Click to dictate">🎤</button>
+                            <textarea id="confession-statement" rows="8" placeholder="Dictate the full confession statement here..."></textarea>
+                            <button class="mic-btn" data-target="confession-statement" title="Click to dictate">🎤</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group-row">
-                    <button id="generate-arrest-memo" class="secondary-btn"
-                        style="flex: 1; margin-right: 10px;">Download Arrest Memo</button>
-                    <button id="generate-remand-report" class="primary-btn" style="flex: 2;">Download Remand
-                        Report</button>
+                    <button id="generate-arrest-memo" class="secondary-btn" style="flex: 1; margin-right: 10px;">Download Arrest Memo</button>
+                    <button id="generate-remand-report" class="primary-btn" style="flex: 2;">Download Remand Report</button>
                 </div>
             </section>
         </main>
     </div>
-
     <script src="script.js"></script>
 </body>
-
 </html>
