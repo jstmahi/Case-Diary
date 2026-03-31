@@ -25,38 +25,39 @@
         <main class="tab-content-container">
 
             <section id="basic-info" class="tab-pane active">
-                
                 <h2>1. Document Uploads & Auto-Fill</h2>
                 <div class="card-container">
                     <div class="upload-grid">
                         <div class="upload-zone">
                             <strong>📄 FIR</strong>
                             <label class="upload-btn" for="fileFIR">Choose File</label>
-                            <input type="file" id="fileFIR" accept=".docx,.txt" onchange="handleFileUpload(event, 'firRaw')">
+                            <input type="file" id="fileFIR" accept=".docx,.txt">
                             <span class="helper-text" id="firStatus">No file</span>
                         </div>
                         <div class="upload-zone">
                             <strong>📄 Complaint</strong>
                             <label class="upload-btn" for="fileComplaint">Choose File</label>
-                            <input type="file" id="fileComplaint" accept=".docx,.txt" onchange="handleFileUpload(event, 'complaintRaw')">
+                            <input type="file" id="fileComplaint" accept=".docx,.txt">
                             <span class="helper-text" id="compStatus">No file</span>
                         </div>
                         <div class="upload-zone">
                             <strong>📄 Statements</strong>
                             <label class="upload-btn" for="fileStatements">Choose File</label>
-                            <input type="file" id="fileStatements" accept=".docx,.txt" onchange="handleFileUpload(event, 'statementsRaw')">
+                            <input type="file" id="fileStatements" accept=".docx,.txt">
                             <span class="helper-text" id="stmtStatus">No file</span>
                         </div>
                     </div>
                     
-                    <button class="primary-btn" onclick="translateAndExtract()" style="margin-top: 15px;">🌐 TRANSLATE TO ENGLISH & AUTO-FILL</button>
+                    <button id="btn-translate-extract" class="primary-btn" style="margin-top: 15px;">🌐 TRANSLATE TO ENGLISH & AUTO-FILL</button>
                     <div id="loader" style="display:none; text-align:center; margin-top:10px; color:#007aff; font-weight:bold;">Translating and Extracting Details... Please wait ⏳</div>
                     
                     <div style="display:none;">
                         <textarea id="firRaw"></textarea>
                         <textarea id="complaintRaw"></textarea>
                         <textarea id="statementsRaw"></textarea>
-                        <textarea id="preambleBox"></textarea> <textarea id="complaintBody"></textarea> </div>
+                        <textarea id="preambleBox"></textarea> 
+                        <textarea id="complaintBody"></textarea> 
+                    </div>
                 </div>
 
                 <h2>2. FIR & Basic Details</h2>
@@ -73,8 +74,8 @@
                     </div>
                     <div class="form-group-row">
                         <div class="form-input-group">
-                            <label for="crime-no">Crime Number</label>
-                            <input type="text" id="crime-no" placeholder="e.g., 45/2026">
+                            <label for="crime-no">Crime Number <span style="color:#ff3b30">*</span></label>
+                            <input type="text" id="crime-no" placeholder="e.g., 45/2026" required>
                         </div>
                         <div class="form-input-group">
                             <label for="sections-of-law">Sections of Law</label>
@@ -104,7 +105,7 @@
 
             <section id="witnesses-part2" class="tab-pane">
                 <h2>Part-II CD: Witness Statements</h2>
-                <button class="secondary-btn" onclick="extractGists()" style="margin-bottom:15px; width:100%;">📥 Auto-Extract Gists from Uploaded Statements</button>
+                <button id="btn-extract-gists" class="secondary-btn" style="margin-bottom:15px; width:100%;">📥 Auto-Extract Gists from Uploaded Statements</button>
                 
                 <div class="card-container">
                     <div class="form-group-row">
@@ -249,6 +250,9 @@
             </section>
         </main>
     </div>
+    
+    <div id="toast-container"></div>
+    
     <script src="script.js"></script>
 </body>
 </html>
