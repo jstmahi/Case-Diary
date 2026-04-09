@@ -1,6 +1,7 @@
 // --- CONFIG & STATE ---
 const APP_VERSION = '1.0';
 let part2Witnesses = [];
+let dailyCDs = [];
 
 // --- STORAGE MANAGER ---
 const StorageManager = {
@@ -13,6 +14,7 @@ const StorageManager = {
     clearAll: function () {
         sessionStorage.clear();
         part2Witnesses = [];
+        dailyCDs = [];
     },
     verifyVersion: function () {
         const storedVersion = this.load('version');
@@ -35,6 +37,26 @@ const StorageManager = {
             }
         }
         part2Witnesses = [];
+    },
+    saveDailyCDs: function () {
+        this.save('dailyCDs', JSON.stringify(dailyCDs));
+    },
+    loadDailyCDs: function () {
+        const data = this.load('dailyCDs');
+        if (data) {
+            try {
+                dailyCDs = JSON.parse(data);
+                if (dailyCDs.length === 0) throw "empty";
+                return;
+            } catch (e) { }
+        }
+        dailyCDs = [{
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+            date: '',
+            actions: '',
+            witnesses: '',
+            disclosure: ''
+        }];
     }
 };
 
@@ -79,12 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     StorageManager.verifyVersion();
     StorageManager.loadWitnesses();
+    StorageManager.loadDailyCDs();
 
     const inputsToTrack = document.querySelectorAll('input[type="text"], input[type="datetime-local"], textarea');
 
     // 1. Initial Load from Storage & Setup Auto-Resize
     inputsToTrack.forEach(input => {
-        if (input.id && input.id !== 'fileFIR' && input.id !== 'fileComplaint' && input.id !== 'fileStatements') {
+        if (input.id && input.id !== 'fileFIR' && input.id !== 'fileComplaint' && input.id !== 'fileStatements' && input.id !== 'fileSceneSeizure' && input.id !== 'fileConfession') {
             const savedValue = StorageManager.load(input.id);
             if (savedValue !== null) {
                 input.value = savedValue;
@@ -101,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderWitnessList();
+    renderDailyCDs();
 
     // 2. Debounced Auto-Save for Inputs
     const saveInputState = debounce((input) => {
@@ -213,9 +237,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    document.getElementById('fileFIR').addEventListener('change', (e) => handleFileUpload(e, 'firRaw'));
-    document.getElementById('fileComplaint').addEventListener('change', (e) => handleFileUpload(e, 'complaintRaw'));
-    document.getElementById('fileStatements').addEventListener('change', (e) => handleFileUpload(e, 'statementsRaw'));
+    document.getElementById('fileFIR')?.addEventListener('change', (e) => handleFileUpload(e, 'firRaw'));
+    document.getElementById('fileComplaint')?.addEventListener('change', (e) => handleFileUpload(e, 'complaintRaw'));
+    document.getElementById('fileStatements')?.addEventListener('change', (e) => handleFileUpload(e, 'statementsRaw'));
+    document.getElementById('fileSceneSeizure')?.addEventListener('change', (e) => handleFileUpload(e, 'sceneSeizureRaw'));
+    document.getElementById('fileConfession')?.addEventListener('change', (e) => handleFileUpload(e, 'confessionRaw'));
 
     // --- TRANSLATE & EXTRACT API ---
     async function translateText(text) {
@@ -238,19 +264,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function generatePreamble() {
         let sec = document.getElementById('sections-of-law').value || "[Sections]";
         let compName = document.getElementById('complainant-name').value || "[Complainant]";
-        let preamble = `I submit that this is a case involving offence U/s ${sec}. The complainant ${compName} presented a written complaint which runs as follows:`;
+        let repTime = document.getElementById('col-action-date')?.value || "[Report Time]";
+        let dtpl = document.getElementById('date-time-place')?.value || "[Date and Place]";
+        let accused = document.getElementById('col-accused-known')?.value.replace(/\n/g, ", ") || "[Accused]";
+
+        let preamble = `I submit that this is a case involving offence U/s ${sec} that ${dtpl.toLowerCase()} and reported in the P.S. on ${repTime}, in which the accused ${accused} with a preplan and preparation attacked the complainant ${compName} and threatened to kill him if he reported the incident. Due to fear, the complainant delayed, and today he reported the matter with the Police.`;
 
         const preambleBox = document.getElementById('preambleBox');
-        preambleBox.value = preamble;
-        StorageManager.save('preambleBox', preamble);
-
-        let compBody = document.getElementById('complaintBody').value;
-        if (compBody) {
-            const gistBox = document.getElementById('investigation-gist');
-            gistBox.value = `${preamble}\n\n"${compBody}"\n\nBasing on the above complaint, I registered a case and took up investigation.`;
-            autoResizeTextarea(gistBox);
-            StorageManager.save('investigation-gist', gistBox.value);
+        if (preambleBox) {
+            preambleBox.value = preamble;
+            autoResizeTextarea(preambleBox);
+            StorageManager.save('preambleBox', preamble);
         }
+
+        let introLine = `Today i.e., on ${repTime}, the complainant ${compName} came to PS and presented a written complaint which runs as follows:`;
+        StorageManager.save('complaintIntro', introLine); // Will use this during doc generation
     }
 
     document.getElementById('btn-translate-extract').addEventListener('click', async () => {
@@ -288,6 +316,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('complainant-name').value = c2[1].trim();
                 StorageManager.save('complainant-name', c2[1].trim());
             }
+
+            // 8 Columns Extractor
+            let dtMatch = firRaw.match(/Date and time of occurrence\s*[:\-]\s*(.*?)\n/i);
+            let plMatch = firRaw.match(/Place of occurrence\s*[:\-]\s*(.*?\n.*?\n)/i) || firRaw.match(/Distance and Direction from P\.S\s*(.*?)\n/is);
+            if (dtMatch || plMatch) {
+                document.getElementById('date-time-place').value = `Occurred on ${dtMatch ? dtMatch[1] : ''} at ${plMatch ? plMatch[1] : ''}`.replace(/\n/g, " ").trim();
+                StorageManager.save('date-time-place', document.getElementById('date-time-place').value);
+            }
+            let c1 = firRaw.match(/Action taken.*?[:\-]\s*(.*?)\n/i) || firRaw.match(/Information received at P\.S\..*?Date\s*(.*?)\s*Time/is);
+            if (c1) { document.getElementById('col-action-date').value = c1[1].trim(); StorageManager.save('col-action-date', c1[1].trim()); }
+            let c3 = firRaw.match(/Names of the accused.*?[:\-]\s*(.*?)(?=\n4\.)/is);
+            if (c3) { document.getElementById('col-accused-known').value = c3[1].trim(); autoResizeTextarea(document.getElementById('col-accused-known')); StorageManager.save('col-accused-known', c3[1].trim()); }
+            let c6 = firRaw.match(/FIR No\..*?Date\s*[:\-]\s*(.*?)\n/i);
+            if (c6) { document.getElementById('col-fir-dated').value = c6[1].trim(); StorageManager.save('col-fir-dated', c6[1].trim()); }
         }
 
         generatePreamble();
@@ -332,6 +374,30 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             showToast("Could not identify witness formats in the text.", "error");
         }
+    });
+
+    document.getElementById('btn-extract-scene')?.addEventListener('click', async () => {
+        let raw = document.getElementById('sceneSeizureRaw').value;
+        if (!raw) { showToast("Please upload Scene/Seizure file first.", "error"); return; }
+        document.getElementById('loader').style.display = 'block';
+        let engText = await translateText(raw);
+        document.getElementById('scene-description').value = engText;
+        autoResizeTextarea(document.getElementById('scene-description'));
+        StorageManager.save('scene-description', engText);
+        document.getElementById('loader').style.display = 'none';
+        showToast("Scene Details Extracted!");
+    });
+
+    document.getElementById('btn-extract-confession')?.addEventListener('click', async () => {
+        let raw = document.getElementById('confessionRaw').value;
+        if (!raw) { showToast("Please upload Confession file first.", "error"); return; }
+        document.getElementById('loader').style.display = 'block';
+        let engText = await translateText(raw);
+        document.getElementById('confession-statement').value = engText;
+        autoResizeTextarea(document.getElementById('confession-statement'));
+        StorageManager.save('confession-statement', engText);
+        document.getElementById('loader').style.display = 'none';
+        showToast("Confession Extracted!");
     });
 
     // --- WITNESS MANAGEMENT ---
@@ -379,13 +445,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Delegation for dynamically created remove buttons
-    document.getElementById('witness-list').addEventListener('click', (e) => {
+    document.getElementById('witness-list')?.addEventListener('click', (e) => {
         if (e.target.classList.contains('remove-btn')) {
             const idToRemove = e.target.getAttribute('data-id');
             part2Witnesses = part2Witnesses.filter(w => w.id !== idToRemove);
             StorageManager.saveWitnesses();
             renderWitnessList();
             showToast("Witness removed.");
+        }
+    });
+
+    // --- TIMELINE CD MANAGEMENT ---
+    document.getElementById('add-cd-day-btn')?.addEventListener('click', () => {
+        dailyCDs.push({
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+            date: '',
+            actions: '',
+            witnesses: '',
+            disclosure: ''
+        });
+        StorageManager.saveDailyCDs();
+        renderDailyCDs();
+    });
+
+    function renderDailyCDs() {
+        const container = document.getElementById('cd-timeline-container');
+        if (!container) return;
+        container.innerHTML = '';
+        dailyCDs.forEach((cd, index) => {
+            const card = document.createElement('div');
+            card.className = 'cd-timeline-card';
+            card.innerHTML = `
+                <button class="remove-btn" type="button" data-id="${cd.id}" style="position:absolute; top:15px; right:15px; background:#ffe5e5; color:#ff3b30; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-weight:bold; font-size:12px;">Remove</button>
+                <h4>Day ${index + 1} - C.D.</h4>
+                <div class="form-input-group">
+                    <label>C.D. Date</label>
+                    <input type="text" class="cd-input-date" data-id="${cd.id}" value="${cd.date}" placeholder="e.g., 10.04.2026">
+                </div>
+                <div class="form-input-group">
+                    <label>Investigation Actions</label>
+                    <textarea class="cd-input-actions" data-id="${cd.id}" rows="3" placeholder="I left the PS and proceeded...">${cd.actions}</textarea>
+                </div>
+                <div class="form-input-group">
+                    <label>Witnesses Examined (L.W. Numbers e.g., 1, 2)</label>
+                    <input type="text" class="cd-input-witnesses" data-id="${cd.id}" value="${cd.witnesses}" placeholder="1, 2, 3">
+                </div>
+                <div class="form-input-group">
+                    <label>Investigation Disclosure</label>
+                    <textarea class="cd-input-disclosure" data-id="${cd.id}" rows="2" placeholder="Investigation is pending for...">${cd.disclosure}</textarea>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        // Reattach events
+        container.querySelectorAll('input, textarea').forEach(input => {
+            if (input.tagName.toLowerCase() === 'textarea') setTimeout(() => autoResizeTextarea(input), 50);
+            input.addEventListener('input', function () {
+                if (this.tagName.toLowerCase() === 'textarea') autoResizeTextarea(this);
+                const id = this.getAttribute('data-id');
+                const cd = dailyCDs.find(c => c.id === id);
+                if (cd) {
+                    if (this.classList.contains('cd-input-date')) cd.date = this.value;
+                    if (this.classList.contains('cd-input-actions')) cd.actions = this.value;
+                    if (this.classList.contains('cd-input-witnesses')) cd.witnesses = this.value;
+                    if (this.classList.contains('cd-input-disclosure')) cd.disclosure = this.value;
+                    debounce(() => StorageManager.saveDailyCDs(), 1000)();
+                }
+            });
+        });
+    }
+
+    document.getElementById('cd-timeline-container')?.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-btn')) {
+            if (dailyCDs.length <= 1) { showToast("Cannot remove the first Day.", "error"); return; }
+            const idToRemove = e.target.getAttribute('data-id');
+            dailyCDs = dailyCDs.filter(c => c.id !== idToRemove);
+            StorageManager.saveDailyCDs();
+            renderDailyCDs();
+            showToast("Day CD removed.");
         }
     });
 
@@ -432,57 +570,138 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<p style="text-align:justify; font-weight:bold; text-indent:0;">${ps} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Cr.No.${cr} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${dist}</p><hr>`;
     }
 
-    document.getElementById('generate-part1').addEventListener('click', () => {
-        let gist = document.getElementById('investigation-gist').value.replace(/\n/g, '<br>');
-        let html = `<p style="text-align:center; font-weight:bold; font-size: 16px; text-indent:0;">CASE DIARY PART – I</p>` + getBasicHeader() + `<p>${gist}</p>`;
-        downloadDoc(html, 'Part_I_CD');
-    });
+    function get8ColumnTableHTML() {
+        let col1 = document.getElementById('col-action-date')?.value || '';
+        let col2 = document.getElementById('complainant-name')?.value || '';
+        let col3 = document.getElementById('col-accused-known')?.value.replace(/\n/g, '<br>') || 'Nil';
+        let col4 = document.getElementById('col-property-lost')?.value || 'Nil';
+        let col5 = document.getElementById('col-property-recovered')?.value || 'Nil';
+        let col6 = document.getElementById('col-fir-dated')?.value || '';
+        let col7 = document.getElementById('col-deceased-name')?.value || 'Nil';
 
-    document.getElementById('generate-part2').addEventListener('click', () => {
-        if (part2Witnesses.length === 0) { showToast("No witnesses recorded.", "error"); return; }
+        let col8Text = part2Witnesses.length > 0 ? part2Witnesses.map(w => `${w.lw}: ${w.name}`).join('<br>') : "Nil";
+
+        return `<table style="width:100%; border-collapse: collapse; font-size: 14px; margin-bottom: 20px;">
+          <tr><td style="width: 5%; vertical-align: top;">1.</td><td style="width: 45%; vertical-align: top;">Date (with hour) on which action was taken.</td><td style="vertical-align: top;">: ${col1}</td></tr>
+          <tr><td style="vertical-align: top;">2.</td><td style="vertical-align: top;">Name of the Complainant/ Informant.</td><td style="vertical-align: top;">: ${col2}</td></tr>
+          <tr><td style="vertical-align: top;">3.</td><td style="vertical-align: top;">Names of the accused known, if any.</td><td style="vertical-align: top;">:<br>${col3}</td></tr>
+          <tr><td style="vertical-align: top;">4.</td><td style="vertical-align: top;">Property lost.</td><td style="vertical-align: top;">: ${col4}</td></tr>
+          <tr><td style="vertical-align: top;">5.</td><td style="vertical-align: top;">Property recovered.</td><td style="vertical-align: top;">: ${col5}</td></tr>
+          <tr><td style="vertical-align: top;">6.</td><td style="vertical-align: top;">FIR dated.</td><td style="vertical-align: top;">: ${col6}</td></tr>
+          <tr><td style="vertical-align: top;">7.</td><td style="vertical-align: top;">Name of the deceased, if any.</td><td style="vertical-align: top;">: ${col7}</td></tr>
+          <tr><td style="vertical-align: top;">8.</td><td style="vertical-align: top;">Witnesses examined (L.Ws).</td><td style="vertical-align: top;">:<br>${col8Text}</td></tr>
+        </table>`;
+    }
+
+    function getPart1CDHTML() {
+        let psName = document.getElementById('ps-name').value;
+        let crNo = document.getElementById('crime-no').value;
+        let dtPlace = document.getElementById('date-time-place')?.value || '';
+        let secLaw = document.getElementById('sections-of-law').value;
+        let finalHTML = "";
+
+        dailyCDs.forEach((cd, index) => {
+            let cdBlock = `<p style="text-align:center; font-weight:bold; font-size: 16px;">CASE DIARY PART – I</p>`;
+            cdBlock += getBasicHeader();
+            cdBlock += `<p style="text-indent: 0;"><b>Date, time and Place of occurrence:</b> ${dtPlace}</p><p style="text-indent: 0;"><b>Offence U/s:</b> ${secLaw}</p><hr>${get8ColumnTableHTML()}<hr>`;
+            cdBlock += `<p style="text-align:center; font-weight:bold; font-size: 15px; text-decoration: underline; text-indent: 0;">C.D. Dated: ${cd.date}</p>`;
+
+            if (index === 0) {
+                cdBlock += `<p>${document.getElementById('preambleBox')?.value || ''}</p>`;
+                cdBlock += `<p>${StorageManager.load('complaintIntro') || ''}</p>`;
+                cdBlock += `<p style="margin: 10px 40px; font-style: italic;">"${document.getElementById('complaintBody')?.value.replace(/\n/g, '<br>') || ''}"</p>`;
+                cdBlock += `<p>Basing on the above complaint, I registered a case in Cr.No. ${crNo} U/s ${secLaw} of ${psName} and took up investigation.</p>`;
+            }
+
+            if (cd.actions) cdBlock += `<p>${cd.actions.replace(/\n/g, '<br>')}</p>`;
+
+            if (cd.witnesses) {
+                let lwArray = cd.witnesses.split(',').map(s => s.replace(/[^0-9]/g, '').trim()).filter(Boolean);
+                let matched = part2Witnesses.filter(w => lwArray.includes(String(w.lw).replace(/[^0-9]/g, '')));
+                if (matched.length > 0) {
+                    cdBlock += `<p>I examined the following witnesses u/s 160(3)/180(3) BNSS and recorded their statements in my Part-II C.D.</p>`;
+                    matched.forEach(w => {
+                        cdBlock += `<p style="text-indent: 0;"><b>${w.lw}: ${w.name}</b></p>`;
+                        cdBlock += `<p style="margin-top: 2px;">${w.statement.replace(/\n/g, '<br>')}</p>`;
+                    });
+                }
+            }
+
+            if (cd.disclosure) cdBlock += `<p><b>Investigation Disclosure:</b> ${cd.disclosure}</p>`;
+            cdBlock += `<p style="text-align:right; margin-top:30px; text-indent: 0;"><b>Investigating Officer,</b><br>${psName}.</p>`;
+            if (index < dailyCDs.length - 1) cdBlock += `<br clear="all" style="page-break-before:always" />`;
+            finalHTML += cdBlock;
+        });
+        return finalHTML;
+    }
+
+    function getPart2CDHTML() {
+        if (part2Witnesses.length === 0) return "";
         let html = `<p style="text-align:center; font-weight:bold; font-size: 16px; text-indent:0;">PART - II C.D. (STATEMENTS OF WITNESSES)</p>` + getBasicHeader();
         part2Witnesses.forEach(w => {
             html += `<p style="text-indent:0; margin-bottom: 5px;"><b>Statement of ${w.lw}: ${w.name} ${w.parent ? ', ' + w.parent : ''} ${w.address ? ', ' + w.address : ''}</b></p>`;
             html += `<p>${w.statement.replace(/\n/g, '<br>')}</p><br>`;
         });
-        downloadDoc(html, 'Part_II_CD');
-    });
+        return html;
+    }
 
-    document.getElementById('generate-mahazzar').addEventListener('click', () => {
-        let p1 = document.getElementById('panchayatdar1').value;
-        let p2 = document.getElementById('panchayatdar2').value;
-        let east = document.getElementById('boundary-east').value;
-        let west = document.getElementById('boundary-west').value;
-        let north = document.getElementById('boundary-north').value;
-        let south = document.getElementById('boundary-south').value;
-        let desc = document.getElementById('scene-description').value.replace(/\n/g, '<br>');
+    function getMahazzarHTML() {
+        let p1 = document.getElementById('panchayatdar1')?.value || '';
+        let p2 = document.getElementById('panchayatdar2')?.value || '';
+        let east = document.getElementById('boundary-east')?.value || '';
+        let west = document.getElementById('boundary-west')?.value || '';
+        let north = document.getElementById('boundary-north')?.value || '';
+        let south = document.getElementById('boundary-south')?.value || '';
+        let desc = document.getElementById('scene-description')?.value.replace(/\n/g, '<br>') || '';
 
         let html = `<p style="text-align:center; font-weight:bold; font-size: 16px; text-indent:0; text-decoration: underline;">SCENE OBSERVATION MAHAZZAR</p>` + getBasicHeader();
         html += `<p style="text-indent:0;"><b>Panchayatdars:</b><br>1. ${p1}<br>2. ${p2}</p><br>`;
         html += `<p style="text-indent:0;"><b>Scene Boundaries:</b><br><b>East:</b> ${east}<br><b>West:</b> ${west}<br><b>North:</b> ${north}<br><b>South:</b> ${south}</p><br>`;
         html += `<p style="text-indent:0;"><b>Detailed Observation:</b></p><p>${desc}</p>`;
-        downloadDoc(html, 'Mahazzar');
-    });
+        return html;
+    }
 
-    document.getElementById('generate-arrest-memo').addEventListener('click', () => {
-        let name = document.getElementById('accused-name').value;
-        let parent = document.getElementById('accused-parent').value;
-        let address = document.getElementById('accused-address').value;
-        let dt = document.getElementById('arrest-date-time').value;
-        let loc = document.getElementById('arrest-location').value;
+    function getArrestMemoHTML() {
+        let name = document.getElementById('accused-name')?.value || '';
+        let parent = document.getElementById('accused-parent')?.value || '';
+        let address = document.getElementById('accused-address')?.value || '';
+        let dt = document.getElementById('arrest-date-time')?.value || '';
+        let loc = document.getElementById('arrest-location')?.value || '';
 
         let html = `<p style="text-align:center; font-weight:bold; font-size: 16px; text-indent:0; text-decoration: underline;">ARREST MEMO</p>` + getBasicHeader();
         html += `<p style="text-indent:0;"><b>Details of the Accused:</b><br>Name & Age: ${name}<br>Father/Husband: ${parent}<br>Address: ${address}</p><br>`;
         html += `<p style="text-indent:0;"><b>Arrest Specifics:</b><br>Date & Time: ${dt}<br>Place of Arrest: ${loc}</p>`;
-        downloadDoc(html, 'Arrest_Memo');
-    });
+        return html;
+    }
 
-    document.getElementById('generate-remand-report').addEventListener('click', () => {
-        let conf = document.getElementById('confession-statement').value.replace(/\n/g, '<br>');
+    function getRemandReportHTML() {
+        let conf = document.getElementById('confession-statement')?.value.replace(/\n/g, '<br>') || '';
         let html = `<p style="text-align:center; font-weight:bold; font-size: 16px; text-decoration: underline; text-indent:0;">REMAND REPORT</p>` + getBasicHeader();
-        html += `<p style="text-indent:0;"><b>Accused:</b> ${document.getElementById('accused-name').value}, ${document.getElementById('accused-parent').value}, ${document.getElementById('accused-address').value}</p>`;
-        html += `<p style="text-indent:0;"><b>Arrest Details:</b> Arrested on ${document.getElementById('arrest-date-time').value} at ${document.getElementById('arrest-location').value}.</p><br>`;
+        html += `<p style="text-indent:0;"><b>Accused:</b> ${document.getElementById('accused-name')?.value || ''}, ${document.getElementById('accused-parent')?.value || ''}, ${document.getElementById('accused-address')?.value || ''}</p>`;
+        html += `<p style="text-indent:0;"><b>Arrest Details:</b> Arrested on ${document.getElementById('arrest-date-time')?.value || ''} at ${document.getElementById('arrest-location')?.value || ''}.</p><br>`;
         html += `<p style="text-indent:0;"><b>Confession Statement:</b></p><p>${conf}</p>`;
-        downloadDoc(html, 'Remand_Report');
+        return html;
+    }
+
+    document.getElementById('generate-part1')?.addEventListener('click', () => { downloadDoc(getPart1CDHTML(), 'Part_I_CD'); });
+    document.getElementById('generate-part2')?.addEventListener('click', () => {
+        if (part2Witnesses.length === 0) { showToast("No witnesses recorded.", "error"); return; }
+        downloadDoc(getPart2CDHTML(), 'Part_II_CD');
+    });
+    document.getElementById('generate-mahazzar')?.addEventListener('click', () => { downloadDoc(getMahazzarHTML(), 'Mahazzar'); });
+    document.getElementById('generate-arrest-memo')?.addEventListener('click', () => { downloadDoc(getArrestMemoHTML(), 'Arrest_Memo'); });
+    document.getElementById('generate-remand-report')?.addEventListener('click', () => { downloadDoc(getRemandReportHTML(), 'Remand_Report'); });
+
+    document.getElementById('master-export-btn')?.addEventListener('click', () => {
+        if (!validateBasicInfo()) return;
+        let masterHTML = getPart1CDHTML();
+        if (part2Witnesses.length > 0) masterHTML += `<br clear="all" style="page-break-before:always" />` + getPart2CDHTML();
+        if (document.getElementById('scene-description')?.value) masterHTML += `<br clear="all" style="page-break-before:always" />` + getMahazzarHTML();
+        if (document.getElementById('arrest-date-time')?.value) {
+            masterHTML += `<br clear="all" style="page-break-before:always" />` + getArrestMemoHTML();
+            masterHTML += `<br clear="all" style="page-break-before:always" />` + getRemandReportHTML();
+        }
+        downloadDoc(masterHTML, 'Complete_Case_Diary');
+        showToast("Master Document Generated Successfully!");
     });
 });

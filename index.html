@@ -17,8 +17,13 @@
                     <h1>Case File Drafter</h1>
                     <p class="subtitle" style="margin-top: 5px;">Select a section to begin drafting</p>
                 </div>
-                <button type="button" id="clear-draft-btn" class="danger-btn"
-                    title="Clear all saved drafts and reset form">Clear Drafts</button>
+                <div class="header-actions" style="display: flex; gap: 10px;">
+                    <button type="button" id="master-export-btn" class="primary-btn"
+                        style="width: auto; background-color: #34c759;"
+                        title="Generate complete Case Diary with all parts">Master Export</button>
+                    <button type="button" id="clear-draft-btn" class="danger-btn"
+                        title="Clear all saved drafts and reset form">Clear Drafts</button>
+                </div>
             </div>
         </header>
 
@@ -73,8 +78,9 @@
                             <textarea id="firRaw"></textarea>
                             <textarea id="complaintRaw"></textarea>
                             <textarea id="statementsRaw"></textarea>
-                            <textarea id="preambleBox"></textarea>
-                            <textarea id="complaintBody"></textarea>
+                            <!-- Aux Hidden texts -->
+                            <textarea id="sceneSeizureRaw"></textarea>
+                            <textarea id="confessionRaw"></textarea>
                         </div>
                     </div>
 
@@ -104,23 +110,76 @@
                             <label for="complainant-name">Complainant Name</label>
                             <input type="text" id="complainant-name" placeholder="Name of the complainant">
                         </div>
+                        <div class="form-input-group">
+                            <label for="date-time-place">Date, Time and Place of occurrence</label>
+                            <input type="text" id="date-time-place" placeholder="e.g., Occurred on...">
+                        </div>
+
+                        <details class="advanced-settings accordion" style="margin-top: 20px;">
+                            <summary>Advanced Case Details (8 Columns)</summary>
+                            <div class="accordion-content">
+                                <div class="form-group-row">
+                                    <div class="form-input-group">
+                                        <label for="col-action-date">1. Date of Action taken</label>
+                                        <input type="text" id="col-action-date">
+                                    </div>
+                                    <div class="form-input-group">
+                                        <label for="col-accused-known">3. Names of Accused Known</label>
+                                        <textarea id="col-accused-known" rows="2" placeholder="Nil"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group-row">
+                                    <div class="form-input-group">
+                                        <label for="col-property-lost">4. Property Lost</label>
+                                        <input type="text" id="col-property-lost" value="Nil">
+                                    </div>
+                                    <div class="form-input-group">
+                                        <label for="col-property-recovered">5. Property Recovered</label>
+                                        <input type="text" id="col-property-recovered" value="Nil">
+                                    </div>
+                                </div>
+                                <div class="form-group-row">
+                                    <div class="form-input-group">
+                                        <label for="col-fir-dated">6. FIR Dated</label>
+                                        <input type="text" id="col-fir-dated">
+                                    </div>
+                                    <div class="form-input-group">
+                                        <label for="col-deceased-name">7. Name of Deceased</label>
+                                        <input type="text" id="col-deceased-name" value="Nil">
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
+                        <div style="margin-top: 20px; border-top: 1px solid #e3e3e8; padding-top: 15px;">
+                            <div class="form-input-group">
+                                <label for="preambleBox">Editable Preamble (Brief Facts)</label>
+                                <textarea id="preambleBox" rows="3"
+                                    placeholder="Generated automatically, but strictly editable..."></textarea>
+                            </div>
+                            <div class="form-input-group">
+                                <label for="complaintBody">Translated Complaint Text</label>
+                                <textarea id="complaintBody" rows="4"
+                                    placeholder="Translated complaint appears here & prints as-is..."></textarea>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 <section id="part1-cd" role="tabpanel" hidden class="tab-pane">
-                    <h2>Part-I CD (Investigation Gist)</h2>
-                    <div class="card-container">
-                        <div class="form-input-group">
-                            <label for="investigation-gist">Gist of Investigation</label>
-                            <div class="mic-wrapper">
-                                <textarea id="investigation-gist" rows="6"
-                                    placeholder="Dictate the gist of the investigation here..."></textarea>
-                                <button class="mic-btn" data-target="investigation-gist" aria-label="Dictate gist"
-                                    title="Click to dictate">🎤</button>
-                            </div>
-                        </div>
-                        <button type="button" id="generate-part1" class="primary-btn">Download Part-I CD</button>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e3e3e8; padding-bottom: 10px;">
+                        <h2 style="border: none; margin: 0; padding: 0;">Part-I CD Timeline</h2>
+                        <button type="button" id="add-cd-day-btn" class="secondary-btn" style="margin: 0;">+ Add Day
+                            CD</button>
                     </div>
+
+                    <div id="cd-timeline-container">
+                        <!-- Dynamic CD Cards will go here -->
+                    </div>
+
+                    <button type="button" id="generate-part1" class="primary-btn" style="margin-top: 20px;">Download
+                        Part-I CD</button>
                 </section>
 
                 <section id="witnesses-part2" role="tabpanel" hidden class="tab-pane">
@@ -170,6 +229,19 @@
 
                 <section id="mahazzars" role="tabpanel" hidden class="tab-pane">
                     <h2>Scene Observation Mahazzar</h2>
+                    <div class="card-container" style="margin-bottom: 25px;">
+                        <div class="upload-grid" style="margin-bottom: 0;">
+                            <div class="upload-zone">
+                                <strong>📍 Scene Obs. / Seizure</strong>
+                                <label class="upload-btn" for="fileSceneSeizure">Choose .docx/.txt</label>
+                                <input type="file" id="fileSceneSeizure" accept=".docx,.txt">
+                                <span class="helper-text" id="sceneSeizureStatus">No file</span>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-extract-scene" class="secondary-btn"
+                            style="width: 100%; margin-top: 15px;">🌐 Translate & Fill Scene Details</button>
+                    </div>
+
                     <div class="card-container">
                         <div class="form-group-row">
                             <div class="form-input-group">
@@ -238,6 +310,20 @@
 
                 <section id="arrest-remand" role="tabpanel" hidden class="tab-pane">
                     <h2>Arrest & Remand Reports</h2>
+
+                    <div class="card-container" style="margin-bottom: 25px; padding-bottom: 10px;">
+                        <div class="upload-grid" style="margin-bottom: 0;">
+                            <div class="upload-zone">
+                                <strong>🗣️ Confession (Arrest)</strong>
+                                <label class="upload-btn" for="fileConfession">Choose .docx/.txt</label>
+                                <input type="file" id="fileConfession" accept=".docx,.txt">
+                                <span class="helper-text" id="confessionStatus">No file</span>
+                            </div>
+                        </div>
+                        <button type="button" id="btn-extract-confession" class="secondary-btn"
+                            style="width: 100%; margin-top: 15px;">🌐 Translate & Fill Confession</button>
+                    </div>
+
                     <div class="card-container">
                         <h3>Accused Details</h3>
                         <div class="form-group-row">
